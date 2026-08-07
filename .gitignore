@@ -4,6 +4,7 @@
 *.png
 *.log
 *.h5
+*.h5 generation time.txt
 
 .env
 env

@@ -213,13 +213,7 @@ def zlogsfr_ratios_to_masses(logmass=None, logsfr_ratios=None, zred=None, **extr
     return m1 * coeffs
 
 # -----------------------
-# 6) to_dust1
-# -----------------------
-def to_dust1(dust1_fraction=None, dust1=None, dust2=None, **extras):
-    return dust1_fraction * dust2
-
-# -----------------------
-# 7) build_model
+# 6) build_model
 # -----------------------
 # Set fixable parameters as params
 def build_model(nbins_sfh=8, **kwargs):
@@ -275,25 +269,13 @@ def build_model(nbins_sfh=8, **kwargs):
         prior=priors.TopHat(mini=-1, maxi=0.4))
     # Also allow differential attenuation of young (<10 Myr old) stars by their
     # birth cloud to vary
-    
-    model_params['dust1'] = {
-        "N": 1, "isfree": False, "init": 0.0,
-        "units": "optical depth towards young stars",
-        "prior": None, 'depends_on': to_dust1
-    }
-
-    model_params['dust1_index'] = {
-        "N": 1, "isfree": False, "init": -1.0,
-        "units": "power-law index of the birth-cloud attenuation"
-    }
-
-    model_params['dust1_fraction'] = dict(N=1, isfree=True, init=1.0,
+    model_params['dust1'] = dict(N=1, isfree=True, init=0,
         prior=priors.ClippedNormal(mean=1, sigma=0.3, mini=0, maxi=2))
 
     # Give stellar metallicity a log-uniform prior between 0.01-1 Zsun
     model_params['logzsol']['isfree'] = True
     model_params['logzsol']['init'] = -1
-    model_params['logzsol']['prior'] = priors.TopHat(mini=-2, maxi=0.19)
+    model_params['logzsol']['prior'] = priors.TopHat(mini=-2, maxi=0)
 
     # Add in nebular emission and give log(U) a log-uniform prior between -4 and -1
     model_params.update(TemplateLibrary['nebular'])
@@ -322,7 +304,7 @@ def build_model(nbins_sfh=8, **kwargs):
     return model
 
 # -----------------------
-# 8) build_sps
+# 7) build_sps
 # -----------------------
 def build_sps(**kwargs):
     from prospect.sources import FastStepBasis
@@ -330,7 +312,7 @@ def build_sps(**kwargs):
     return sps
 
 # -----------------------
-# 9) minimize
+# 8) minimize
 # -----------------------
 def minimize(obs, model, sps):
     params = run_params.copy()
@@ -348,7 +330,7 @@ def minimize(obs, model, sps):
     return output
 
 # -----------------------
-# 10) plot results
+# 9) plot results
 # -----------------------
 ### LOAD FILE
 def plot_results(run_params, model, sps):
@@ -501,49 +483,56 @@ def plot_results(run_params, model, sps):
         theta = result['chain'][randint(nwalkers), randint(niter)]
     else:
         theta = result["chain"][randint(len(result["chain"]))]
-
-    # generate models
-    # sps = reader.get_sps(result)  # this works if using parameter files
-    mspec, mphot, mextra = model.mean_model(theta, obs, sps=sps)
-    mspec_map, mphot_map, _ = model.mean_model(theta_max, obs, sps=sps)
-
+    
     # Make plot of data and model
     plt.figure(figsize=(16,8))
 
-    a = 1.0 + model.params.get('zred', 0.0) # cosmological redshifting
-    # photometric effective wavelengths
-    wphot = obs["phot_wave"]
-    # spectroscopic wavelengths
-    if obs["wavelength"] is None:
-        # *restframe* spectral wavelengths, since obs["wavelength"] is None
-        wspec = sps.wavelengths
-        wspec *= a #redshift them
-    else:
-        wspec = obs["wavelength"]
+    for i in range(3):
+        # experiment with dust1
+        dust1_value = i
+        theta[12] = dust1_value
+        theta_max[12] = dust1_value
+        print(theta, theta_max)
 
-    # establish bounds
-    # Can change this for visuals!
-    ARTIFICIAL_Y_LIM = 1e-17
+        # generate models
+        # sps = reader.get_sps(result)  # this works if using parameter files
+        mspec, mphot, mextra = model.mean_model(theta, obs, sps=sps)
+        mspec_map, mphot_map, _ = model.mean_model(theta_max, obs, sps=sps)
 
-    xmin, xmax = np.min(wphot)*0.8, np.max(wphot)/0.8
-    temp = np.interp(np.linspace(xmin,xmax,10000), wspec, mspec)
-    print(f'temp.min={temp.min()}, temp.max={temp.max()}')
-    ymin, ymax = max(temp.min()*(0.1),ARTIFICIAL_Y_LIM), temp.max()/0.1
+        a = 1.0 + model.params.get('zred', 0.0) # cosmological redshifting
+        # photometric effective wavelengths
+        wphot = obs["phot_wave"]
+        # spectroscopic wavelengths
+        if obs["wavelength"] is None:
+            # *restframe* spectral wavelengths, since obs["wavelength"] is None
+            wspec = sps.wavelengths
+            wspec *= a #redshift them
+        else:
+            wspec = obs["wavelength"]
 
-    mask = mphot > 0
+        # establish bounds
+        # Can change this for visuals!
+        ARTIFICIAL_Y_LIM = 1e-17
 
-    plt.loglog(wspec, mspec, label='Model spectrum (random draw)',
-        lw=0.7, color='navy', alpha=0.7)
-    plt.loglog(wspec, mspec_map, label='Model spectrum (MAP)',
-        lw=0.7, color='green', alpha=0.7)
-    plt.errorbar(wphot, mphot, label='Model photometry (random draw)',
-            marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
-            markerfacecolor='none', markeredgecolor='blue', 
-            markeredgewidth=3)
-    plt.errorbar(wphot, mphot_map, label='Model photometry (MAP)',
-            marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
-            markerfacecolor='none', markeredgecolor='green', 
-            markeredgewidth=3)
+        xmin, xmax = np.min(wphot)*0.8, np.max(wphot)/0.8
+        temp = np.interp(np.linspace(xmin,xmax,10000), wspec, mspec)
+        print(f'temp.min={temp.min()}, temp.max={temp.max()}')
+        ymin, ymax = max(temp.min()*(0.1),ARTIFICIAL_Y_LIM), temp.max()/0.1
+
+        mask = mphot > 0
+
+        # plt.loglog(wspec, mspec, label='Model spectrum (random draw)',
+        #     lw=0.7, color='navy', alpha=0.7)
+        plt.loglog(wspec, mspec_map, label=f'Model spectrum (MAP), dust1={i}',
+            lw=0.7, alpha=0.7)
+        # plt.errorbar(wphot, mphot, label='Model photometry (random draw)',
+        #         marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
+        #         markerfacecolor='none', markeredgecolor='blue', 
+        #         markeredgewidth=3)
+        plt.errorbar(wphot, mphot_map, label=f'Model photometry (MAP), dust1={i}',
+                marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
+                markerfacecolor='none', 
+                markeredgewidth=3)
     plt.errorbar(wphot[mask], obs['maggies'][mask], yerr=obs['maggies_unc'][mask], 
             label='Observed photometry', ecolor='red', 
             marker='o', markersize=10, ls='', lw=3, alpha=0.8, 
@@ -574,7 +563,7 @@ def plot_results(run_params, model, sps):
     plt.show()
 
 # -----------------------
-# 11) main program
+# 10) main program
 # -----------------------
 if __name__ == "__main__":
     ## To add passable parameters:
