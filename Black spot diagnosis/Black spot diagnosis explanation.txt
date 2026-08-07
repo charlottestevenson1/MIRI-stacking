@@ -1,0 +1,5 @@
+*** BLACK SPOT DIAGNOSIS ***
+
+This folder was created to analyse why there was a dark negative well around the central galaxy in all of my plots. I generated histograms to map (relative) flux against radius, which showed a dip and then a rise with increasing radius in all bands, as the visual inspection suggested. We performed this analysis on the full stack of galaxies, and then a substack of those galaxies which were not close to any bright objects. The effect appeared in both stacks.
+
+This issue was oddly systematic and appeared in the median stacks too, but disappeared upon stacking cutouts with all neighbouring objects masked, which suggests it was related to neighbouring objects in a systematic way: perhaps some sort of selection bias in the catalogue used?

@@ -1,0 +1,2 @@
+*** FILTER LISTS ***
+This folder includes a list for each band detailing the objects which are covered by that band.

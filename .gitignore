@@ -1,0 +1,21 @@
+# Ignore big data files
+*.fits
+*.pdf
+*.png
+*.log
+*.h5
+
+.env
+env
+.Trash-35180
+opt
+
+Cutouts/cutout generation/Manual Cutouts.py
+Cutouts/cutout generation/Cutout2D.py
+Hainline visual inspection investigation
+Photometry/Band data/pivot wave calculations.py
+Prospector/Prospector trial.py
+Prospector/InteractiveDemo.ipynb
+
+PhotUtils Learning
+Redshift Bins/z = 11-12 investigation
