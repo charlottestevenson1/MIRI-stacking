@@ -31,8 +31,8 @@ def send_email(subject: str, body: str) -> None:
         server.send_message(msg)
 
 # Lower and upper redshift limits
-zlo = 8
-zup = 9
+zlo = 9
+zup = 10
 
 # Set the fitting method to use: either "emcee" or "dynesty"
 fit_method = "dynesty"  # "emcee" or "dynesty"
@@ -660,7 +660,7 @@ if __name__ == "__main__":
             sps=sps
             )
 
-        with open(f'Prospector/{run_params["outfile"]+" generation time"}.txt', 'w') as f:
+        with open(f'{run_params["outfile"]}_generation_time.txt', 'w') as f:
             f.write(f'Fitting model using {fit_method}...\n\n')
             f.write(f'model fit after {time.perf_counter() - start_time:.2f} seconds\n\n')
             f.write(f'run_params: {run_params}\n\n')
