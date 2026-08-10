@@ -31,8 +31,12 @@ def send_email(subject: str, body: str) -> None:
         server.send_message(msg)
 
 # Lower and upper redshift limits
-zlo = 9
-zup = 10
+zlo = 11
+zup = 12
+
+# Is MIRI included?
+MIRI_inc = True
+MIRI_desc = 'with MIRI' if MIRI_inc else 'no MIRI'
 
 # Set the fitting method to use: either "emcee" or "dynesty"
 fit_method = "dynesty"  # "emcee" or "dynesty"
@@ -370,8 +374,12 @@ def plot_results(run_params, model, sps):
         tracefig = reader.traceplot(result, figsize=(20,10), chains=chosen)
     else:
         tracefig = reader.traceplot(result, figsize=(20,10))
+    
+    tracefig.suptitle(f'Traceplot: z={zlo}-{zup}, {MIRI_desc}', y=0.995)
 
-    plt.show()
+    plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} traceplot.png', dpi=300)
+    #plt.show()
+    plt.close()
 
     ### PLOT CORNER PLOT
     # maximum a posteriori (of the locations visited by the MCMC sampler)
@@ -450,9 +458,10 @@ def plot_results(run_params, model, sps):
             num = ylabel.split("_")[-1]
             ax.set_ylabel(f"logSFRr{num}")
 
-    plt.show()
-
-
+    cornerfig.suptitle(f'Cornerplot: z={zlo}-{zup}, {MIRI_desc}', y=0.995)
+    plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} cornerplot.png', dpi=300)
+    #plt.show()
+    plt.close()
 
     ###PLOT SFH
     if results_type == "dynesty":
@@ -488,9 +497,11 @@ def plot_results(run_params, model, sps):
         ax.set_yscale("log")
         ax.set_xlim([1, 10**(np.log10(cosmo.age(zlo).value*1e3))])
         ax.invert_xaxis()
-        plt.tight_layout()
-        plt.show()
-
+        fig.suptitle(f'SFH: z={zlo}-{zup}, {MIRI_desc}', y=0.94)
+        fig.tight_layout(rect=[0, 0, 1, 0.93])
+        plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} SFH.png', dpi=300)
+        #plt.show()
+        plt.close()
 
 
     ### PLOT SEDs AND RESIDUALS
@@ -562,16 +573,20 @@ def plot_results(run_params, model, sps):
     # plt.xlim([xmin, xmax])
     plt.xlim([xmin, xmax*5])
     plt.ylim([ymin, ymax])
-    # add vertical stripes on plot to show min and max wavelengths of Al V, Pf-5, Ca IV, Pf-delta
-    cws = [29053, 30392, 32070, 32970][2:]
-    labels = ['Ca IV', 'Pf-delta']
-    colors = ['green', 'red']
-    for i in range(2):
-        plt.axvspan(cws[i]*9, cws[i]*10, color=colors[i], alpha=0.3)
-        plt.axvline(cws[i]*9.32, color=colors[i], alpha=0.7, ls='--', lw=2, label=labels[i])
+    ### add vertical stripes on plot to show min and max wavelengths of Al V, Pf-5, Ca IV, Pf-delta
+    # cws = [29053, 30392, 32070, 32970][2:]
+    # labels = ['Ca IV', 'Pf-delta']
+    # colors = ['green', 'red']
+    # # for i in range(2):
+    #     plt.axvspan(cws[i]*9, cws[i]*10, color=colors[i], alpha=0.3)
+    #     plt.axvline(cws[i]*9.32, color=colors[i], alpha=0.7, ls='--', lw=2, label=labels[i])
     plt.legend(loc='best', fontsize=20)
-    plt.tight_layout()
-    plt.show()
+    fig = plt.gcf()
+    fig.suptitle(f'SED: z={zlo}-{zup}, {MIRI_desc}', y=0.94)
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
+    plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} SED.png', dpi=300)
+    #plt.show()
+    plt.close()
 
 # -----------------------
 # 11) main program
@@ -660,7 +675,7 @@ if __name__ == "__main__":
             sps=sps
             )
 
-        with open(f'{run_params["outfile"]}_generation_time.txt', 'w') as f:
+        with open(f'{run_params["outfile"]} generation time.txt', 'w') as f:
             f.write(f'Fitting model using {fit_method}...\n\n')
             f.write(f'model fit after {time.perf_counter() - start_time:.2f} seconds\n\n')
             f.write(f'run_params: {run_params}\n\n')
