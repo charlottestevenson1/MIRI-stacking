@@ -1,5 +1,3 @@
-### ADD OPTION FOR ONLY WIDE BANDS!
-
 import argparse
 from prospect.io import write_results
 from prospect.fitting import fit_model
