@@ -1,3 +1,5 @@
+### ADD OPTION FOR ONLY WIDE BANDS!
+
 import argparse
 from prospect.io import write_results
 from prospect.fitting import fit_model
@@ -31,11 +33,11 @@ def send_email(subject: str, body: str) -> None:
         server.send_message(msg)
 
 # Lower and upper redshift limits
-zlo = 11
-zup = 12
+zlo = 9
+zup = 10
 
 # Is MIRI included?
-MIRI_inc = True
+MIRI_inc = False
 MIRI_desc = 'with MIRI' if MIRI_inc else 'no MIRI'
 
 # Set the fitting method to use: either "emcee" or "dynesty"
@@ -97,11 +99,11 @@ def build_obs(zlo=zlo, zup=zup):
     # The obs dictionary, empty for now
     obs = {}
 
+    # Filter mask
+
     # Filter names - loads the transmission curves of the filters
-    NIRCam = [[f'jwst_{band.lower()}' for band in ["F070W", "F090W", "F115W", "F150W", "F162M", "F182M", "F200W",
-        "F210M", "F250M", "F277W", "F300M", "F335M", "F356W", "F410M", "F430M", "F444W", "F460M", "F480M"]][i] for i in [0,1,2,3,6,9,12,15]] # Only W bands
-    MIRI = [f'jwst_{band.lower()}' for band in ["F560W", "F770W", "F1000W",
-    "F1280W", "F1500W", "F1800W", "F2100W", "F2550W"]]
+    NIRCam = [f'jwst_{band.lower()}' for band in ["F070W", "F090W", "F115W", "F150W", "F200W", "F277W", "F356W", "F444W"]] # Only W bands
+    MIRI = [f'jwst_{band.lower()}' for band in ["F560W", "F770W", "F1000W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W"]]
     filternames = NIRCam + MIRI
 
     # Instantiate 'Filter()' objects with sedpy, and put them in the filters key of obs
@@ -110,12 +112,12 @@ def build_obs(zlo=zlo, zup=zup):
     # Load fluxes and errors
     with open(f'Prospector/Stack data/{zlo}-{zup} Fluxes.txt') as f:
         all_fluxes_nJy = [float(point) for point in f.readlines()]
+        # Weird indices are to select for only wide bands in NIRCam.
         fluxes_nJy = [all_fluxes_nJy[i] for i in [0,1,2,3,6,9,12,15,18,19,20,21,22,23,24,25]]
 
     with open(f'Prospector/Stack data/{zlo}-{zup} Errors.txt') as f:
         all_errors_nJy = [float(point) for point in f.readlines()]
         errors_nJy = [all_errors_nJy[i] for i in [0,1,2,3,6,9,12,15,18,19,20,21,22,23,24,25]]
-
     # Convert to maggies
     fluxes = np.array(fluxes_nJy) / (3.631*1e12)
     errors = np.array(errors_nJy) / (3.631*1e12)
@@ -124,7 +126,8 @@ def build_obs(zlo=zlo, zup=zup):
     obs["maggies_unc"] = errors
 
     # Make a mask for the objects you want to consider (True) or ignore (False).
-    obs["phot_mask"] = np.array([True for f in obs["filters"]])
+    obs["phot_mask"] = np.array([True for i in range(len(filternames))]) if MIRI_inc else np.array([True for i in range(len(NIRCam))] + [False for i in range(len(MIRI))]) 
+    #print(obs["phot_mask"])
 
     # Array of effective wavelengths for each filter
     obs["phot_wave"] = np.array([f.wave_effective for f in obs["filters"]])
@@ -597,13 +600,12 @@ if __name__ == "__main__":
     parser.add_argument("--outfile", type=str, default=run_params["outfile"])
     parser.add_argument("--showplots", action="store_true")
     parser.add_argument("--fitnewmodel", action="store_true")
-    parser.add_argument("--readfile", type=str, default=None)
     parser.add_argument("--minimize", action="store_true")
     args = parser.parse_args()
     run_params["outfile"] = args.outfile
     run_params["showplots"] = args.showplots
     run_params["fitnewmodel"] = args.fitnewmodel
-    run_params["readfile"] = args.readfile
+    run_params["readfile"] = f'Prospector/z={zlo}-{zup} {MIRI_desc}.h5'
     run_params["minimize"] = args.minimize
 
     start_time = time.perf_counter()
@@ -616,7 +618,6 @@ if __name__ == "__main__":
 
     sps = build_sps()
     print(f'sps built after {time.perf_counter() - start_time:.2f} seconds \n\n')
-
 
     if run_params["fitnewmodel"]:
         # Seems like fit_model can just minimize already, so maybe we don't need to do a separate minimize step. But if we do, we can uncomment the following lines:
@@ -690,4 +691,5 @@ if __name__ == "__main__":
         )
 
     if run_params["showplots"]:
+        print(f'Opening file {run_params["readfile"]}')
         plot_results(run_params, model, sps)

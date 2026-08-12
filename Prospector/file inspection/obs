@@ -1,0 +1,11 @@
+{'maggies': array([ 5.07034916e-14, -4.06334115e-14,  1.27968302e-12,  2.20302394e-12,
+        1.98012673e-12,  1.76460296e-12,  2.00140460e-12,  3.16013361e-12,
+        4.64349920e-12,  3.22804496e-12,  1.57839034e-11,  8.57850164e-12,
+        8.62782226e-12,  4.47514063e-11, -2.42031774e-11,  3.31199194e-10]), 'maggies_unc': array([5.30410018e-14, 1.89599843e-14, 1.60448927e-14, 1.56034619e-14,
+       1.51676981e-14, 1.16324804e-14, 1.31142440e-14, 1.65706333e-14,
+       1.76314846e-12, 1.95261892e-12, 5.04137902e-12, 1.12408615e-11,
+       1.06714280e-11, 3.31085606e-11, 5.51941119e-11, 3.95748313e-10]), 'phot_mask': array([ True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True]), 'phot_wave': array([  7013.62493411,   8982.57555383,  11485.73912689,  14944.1466107 ,
+        19781.51587826,  27605.46753585,  35483.97091825,  43787.17563798,
+        56151.98539645,  75911.43807812,  99230.48179428, 127677.03633989,
+       150078.81323708, 179390.92895836, 207002.11708009, 252766.39362356]), 'filternames': ['jwst_f070w', 'jwst_f090w', 'jwst_f115w', 'jwst_f150w', 'jwst_f200w', 'jwst_f277w', 'jwst_f356w', 'jwst_f444w', 'jwst_f560w', 'jwst_f770w', 'jwst_f1000w', 'jwst_f1280w', 'jwst_f1500w', 'jwst_f1800w', 'jwst_f2100w', 'jwst_f2550w'], 'filters': [<class 'sedpy.observate.Filter'>(jwst_f070w), <class 'sedpy.observate.Filter'>(jwst_f090w), <class 'sedpy.observate.Filter'>(jwst_f115w), <class 'sedpy.observate.Filter'>(jwst_f150w), <class 'sedpy.observate.Filter'>(jwst_f200w), <class 'sedpy.observate.Filter'>(jwst_f277w), <class 'sedpy.observate.Filter'>(jwst_f356w), <class 'sedpy.observate.Filter'>(jwst_f444w), <class 'sedpy.observate.Filter'>(jwst_f560w), <class 'sedpy.observate.Filter'>(jwst_f770w), <class 'sedpy.observate.Filter'>(jwst_f1000w), <class 'sedpy.observate.Filter'>(jwst_f1280w), <class 'sedpy.observate.Filter'>(jwst_f1500w), <class 'sedpy.observate.Filter'>(jwst_f1800w), <class 'sedpy.observate.Filter'>(jwst_f2100w), <class 'sedpy.observate.Filter'>(jwst_f2550w)], 'logify_spectrum': False, 'mask': None, 'ndof': 16, 'spectrum': None, 'unc': None, 'wavelength': None}
