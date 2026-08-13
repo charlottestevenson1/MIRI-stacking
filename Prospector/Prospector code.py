@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from astropy.cosmology import WMAP9 as cosmo
 from multiprocessing import Pool
 import time
+import astropy.units as u
 
 # Send email when fitting has completed
 import os
@@ -31,8 +32,8 @@ def send_email(subject: str, body: str) -> None:
         server.send_message(msg)
 
 # Lower and upper redshift limits
-zlo = 9
-zup = 10
+zlo = 11
+zup = 12
 
 # Is MIRI included?
 MIRI_inc = False
@@ -76,28 +77,11 @@ run_params["nested_posterior_thresh"] = 0.05
 # 2) build_obs
 # -----------------------
 def build_obs(zlo=zlo, zup=zup):
-    """Build a dictionary of observational data.  In this example 
-    the data consist of photometry for a single nearby dwarf galaxy 
-    from Johnson et al. 2013.
-    
-    :param snr:
-        The S/N to assign to the photometry, since none are reported 
-        in Johnson et al. 2013
-        
-    :param ldist:
-        The luminosity distance to assume for translating absolute magnitudes 
-        into apparent magnitudes.
-        
-    :returns obs:
-        A dictionary of observational data to use in the fit.
-    """
+
     from prospect.utils.obsutils import fix_obs
     import sedpy
 
-    # The obs dictionary, empty for now
     obs = {}
-
-    # Filter mask
 
     # Filter names - loads the transmission curves of the filters
     NIRCam = [f'jwst_{band.lower()}' for band in ["F070W", "F090W", "F115W", "F150W", "F200W", "F277W", "F356W", "F444W"]] # Only W bands
@@ -116,9 +100,21 @@ def build_obs(zlo=zlo, zup=zup):
     with open(f'Prospector/Stack data/{zlo}-{zup} Errors.txt') as f:
         all_errors_nJy = [float(point) for point in f.readlines()]
         errors_nJy = [all_errors_nJy[i] for i in [0,1,2,3,6,9,12,15,18,19,20,21,22,23,24,25]]
+    
     # Convert to maggies
     fluxes = np.array(fluxes_nJy) / (3.631*1e12)
     errors = np.array(errors_nJy) / (3.631*1e12)
+
+    print(errors)
+    print(fluxes/errors)
+
+    # cap the SNR ratio at 20
+    snr_max = 20
+    mask = np.where((fluxes/errors) > snr_max)
+    errors[mask] = fluxes[mask]/snr_max
+
+    print(errors)
+    print(fluxes/errors)
 
     obs["maggies"] = fluxes
     obs["maggies_unc"] = errors
@@ -378,7 +374,7 @@ def plot_results(run_params, model, sps):
     
     tracefig.suptitle(f'Traceplot: z={zlo}-{zup}, {MIRI_desc}', y=0.995)
 
-    plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} traceplot.png', dpi=300)
+    plt.savefig(f'Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} traceplot.png', dpi=300)
     #plt.show()
     plt.close()
 
@@ -460,7 +456,7 @@ def plot_results(run_params, model, sps):
             ax.set_ylabel(f"logSFRr{num}")
 
     cornerfig.suptitle(f'Cornerplot: z={zlo}-{zup}, {MIRI_desc}', y=0.995)
-    plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} cornerplot.png', dpi=300)
+    plt.savefig(f'Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} cornerplot.png', dpi=300)
     #plt.show()
     plt.close()
 
@@ -500,93 +496,423 @@ def plot_results(run_params, model, sps):
         ax.invert_xaxis()
         fig.suptitle(f'SFH: z={zlo}-{zup}, {MIRI_desc}', y=0.94)
         fig.tight_layout(rect=[0, 0, 1, 0.93])
-        plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} SFH.png', dpi=300)
+        plt.savefig(f'Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} SFH.png', dpi=300)
         #plt.show()
         plt.close()
 
 
     ### PLOT SEDs AND RESIDUALS
-    # randomly chosen parameters from chain
+
+    # ------------------------------------------------------------
+    # Randomly chosen parameters from chain
+    # ------------------------------------------------------------
+
     randint = np.random.randint
+
     if results_type == "emcee":
-        nwalkers, niter = result["run_params"]["nwalkers"], result["run_params"]['niter']
-        theta = result['chain'][randint(nwalkers), randint(niter)]
+        nwalkers = result["run_params"]["nwalkers"]
+        niter = result["run_params"]["niter"]
+
+        theta = result["chain"][
+            randint(nwalkers),
+            randint(niter)
+        ]
+
     else:
-        theta = result["chain"][randint(len(result["chain"]))]
+        theta = result["chain"][
+            randint(len(result["chain"]))
+        ]
 
-    # generate models
-    # sps = reader.get_sps(result)  # this works if using parameter files
-    mspec, mphot, mextra = model.mean_model(theta, obs, sps=sps)
-    mspec_map, mphot_map, _ = model.mean_model(theta_max, obs, sps=sps)
 
-    # Make plot of data and model
-    plt.figure(figsize=(16,8))
+    # ------------------------------------------------------------
+    # Generate models
+    # ------------------------------------------------------------
 
-    a = 1.0 + model.params.get('zred', 0.0) # cosmological redshifting
-    # photometric effective wavelengths
+    mspec, mphot, mextra = model.mean_model(
+        theta,
+        obs,
+        sps=sps
+    )
+
+    mspec_map, mphot_map, _ = model.mean_model(
+        theta_max,
+        obs,
+        sps=sps
+    )
+
+
+    # ------------------------------------------------------------
+    # Make figure
+    # ------------------------------------------------------------
+
+    plt.figure(figsize=(16, 8))
+
+
+    # ------------------------------------------------------------
+    # Wavelength grids
+    # ------------------------------------------------------------
+
+    labels = list(result["theta_labels"])
+    zidx = labels.index("zred")
+
+    z_random = theta[zidx]
+    z_map = theta_max[zidx]
+
+    wspec = sps.wavelengths * (1 + z_random)
+    wspec_map = sps.wavelengths * (1 + z_map)
+
     wphot = obs["phot_wave"]
-    # spectroscopic wavelengths
-    if obs["wavelength"] is None:
-        # *restframe* spectral wavelengths, since obs["wavelength"] is None
-        wspec = sps.wavelengths
-        wspec *= a #redshift them
-    else:
-        wspec = obs["wavelength"]
 
-    # establish bounds
-    # Can change this for visuals!
-    ARTIFICIAL_Y_LIM = 1e-17
 
-    xmin, xmax = np.min(wphot)*0.8, np.max(wphot)/0.8
-    temp = np.interp(np.linspace(xmin,xmax,10000), wspec, mspec)
-    print(f'temp.min={temp.min()}, temp.max={temp.max()}')
-    ymin, ymax = max(temp.min()*(0.1),ARTIFICIAL_Y_LIM), temp.max()/0.1
+    # ------------------------------------------------------------
+    # Convert model fluxes from maggies to AB magnitudes
+    # ------------------------------------------------------------
 
-    mask = mphot > 0
+    def maggies_to_ab(flux):
 
-    plt.loglog(wspec, mspec, label='Model spectrum (random draw)',
-        lw=0.7, color='navy', alpha=0.7)
-    plt.loglog(wspec, mspec_map, label='Model spectrum (MAP)',
-        lw=0.7, color='green', alpha=0.7)
-    plt.errorbar(wphot, mphot, label='Model photometry (random draw)',
-            marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
-            markerfacecolor='none', markeredgecolor='blue', 
-            markeredgewidth=3)
-    plt.errorbar(wphot, mphot_map, label='Model photometry (MAP)',
-            marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
-            markerfacecolor='none', markeredgecolor='green', 
-            markeredgewidth=3)
-    plt.errorbar(wphot[mask], obs['maggies'][mask], yerr=obs['maggies_unc'][mask], 
-            label='Observed photometry', ecolor='red', 
-            marker='o', markersize=10, ls='', lw=3, alpha=0.8, 
-            markerfacecolor='none', markeredgecolor='red', 
-            markeredgewidth=3)
+        flux = np.asarray(flux, dtype=float)
 
-    # plot transmission curves
-    for f in obs['filters']:
-        w, t = f.wavelength.copy(), f.transmission.copy()
-        t = t / t.max()
-        t = 10**(0.2*(np.log10(ymax/ymin)))*t * ymin
-        plt.loglog(w, t, lw=3, color='gray', alpha=0.7)
+        mag = np.full_like(
+            flux,
+            np.nan,
+            dtype=float
+        )
 
-    plt.xlabel('Wavelength [A]')
-    plt.ylabel('Flux Density [maggies]')
-    # plt.xlim([xmin, xmax])
-    plt.xlim([xmin, xmax*5])
-    plt.ylim([ymin, ymax])
-    ### add vertical stripes on plot to show min and max wavelengths of Al V, Pf-5, Ca IV, Pf-delta
+        valid = (
+            np.isfinite(flux)
+            & (flux > 0)
+        )
+
+        mag[valid] = -2.5 * np.log10(
+            flux[valid]
+        )
+
+        return mag
+
+
+    mspec_AB = maggies_to_ab(mspec)
+    mspec_map_AB = maggies_to_ab(mspec_map)
+
+    mphot_AB = maggies_to_ab(mphot)
+    mphot_map_AB = maggies_to_ab(mphot_map)
+
+
+    # ------------------------------------------------------------
+    # Observed photometry
+    # ------------------------------------------------------------
+
+    flux = np.asarray(
+        obs["maggies"],
+        dtype=float
+    )
+
+    flux_err = np.asarray(
+        obs["maggies_unc"],
+        dtype=float
+    )
+
+    snr = flux / flux_err
+
+
+    # ------------------------------------------------------------
+    # Detection mask
+    # ------------------------------------------------------------
+
+    detected = (
+        (snr >= 1.5)
+        & np.isfinite(flux)
+        & np.isfinite(flux_err)
+        & (flux_err > 0)
+        & (flux > flux_err)
+    )
+
+
+    # ------------------------------------------------------------
+    # Convert detected observed fluxes to AB magnitudes
+    # ------------------------------------------------------------
+
+    mag = np.full_like(
+        flux,
+        np.nan,
+        dtype=float
+    )
+
+    mag_err_lower = np.full_like(
+        flux,
+        np.nan,
+        dtype=float
+    )
+
+    mag_err_upper = np.full_like(
+        flux,
+        np.nan,
+        dtype=float
+    )
+
+
+    mag[detected] = -2.5 * np.log10(
+        flux[detected]
+    )
+
+
+    # Bright-side error:
+    # F + sigma -> brighter -> smaller magnitude
+
+    mag_bright = -2.5 * np.log10(
+        flux[detected] + flux_err[detected]
+    )
+
+
+    # F - sigma -> fainter -> larger magnitude
+
+    mag_faint = -2.5 * np.log10(
+        flux[detected] - flux_err[detected]
+    )
+
+
+    mag_err_lower[detected] = (
+        mag[detected] - mag_bright
+    )
+
+    mag_err_upper[detected] = (
+        mag_faint - mag[detected]
+    )
+
+
+    # ------------------------------------------------------------
+    # Upper limits: S/N < 1.5
+    # ------------------------------------------------------------
+
+    upper_limits = (
+        (snr < 1.5)
+        & np.isfinite(flux_err)
+        & (flux_err > 0)
+    )
+
+    upper_limit_flux = (
+        1.5 * flux_err[upper_limits]
+    )
+
+    upper_limit_mag = (
+        -2.5 * np.log10(
+            upper_limit_flux
+        )
+    )
+
+
+    # ------------------------------------------------------------
+    # Y-axis limits
+    # ------------------------------------------------------------
+
+    all_model_mags = np.concatenate([
+        mspec_AB[np.isfinite(mspec_AB)],
+        mspec_map_AB[np.isfinite(mspec_map_AB)],
+        mphot_AB[np.isfinite(mphot_AB)],
+        mphot_map_AB[np.isfinite(mphot_map_AB)]
+    ])
+
+    ymin = np.nanmin(all_model_mags)
+    ymax = np.nanmax(all_model_mags)
+
+    padding = 0.5
+
+    #y_low = ymin - padding
+    y_low = 20
+    #y_high = ymax + padding
+    y_high = 40
+
+
+    # ------------------------------------------------------------
+    # X-axis limits
+    # ------------------------------------------------------------
+
+    xmin = np.min(wphot) * 0.8
+    xmax = np.max(wphot) / 0.8
+
+
+    # ------------------------------------------------------------
+    # Model spectra
+    # ------------------------------------------------------------
+
+    plt.plot(
+        wspec,
+        mspec_AB,
+        label="Model spectrum (random draw)",
+        lw=0.7,
+        color="navy",
+        alpha=0.7
+    )
+
+    plt.plot(
+        wspec_map,
+        mspec_map_AB,
+        label="Model spectrum (MAP)",
+        lw=0.7,
+        color="green",
+        alpha=0.7
+    )
+
+
+    # ------------------------------------------------------------
+    # Model photometry
+    # ------------------------------------------------------------
+
+    plt.errorbar(
+        wphot,
+        mphot_AB,
+        label="Model photometry (random draw)",
+        marker="s",
+        markersize=10,
+        alpha=0.8,
+        ls="",
+        markerfacecolor="none",
+        markeredgecolor="blue",
+        markeredgewidth=3
+    )
+
+    plt.errorbar(
+        wphot,
+        mphot_map_AB,
+        label="Model photometry (MAP)",
+        marker="s",
+        markersize=10,
+        alpha=0.8,
+        ls="",
+        markerfacecolor="none",
+        markeredgecolor="green",
+        markeredgewidth=3
+    )
+
+
+    # ------------------------------------------------------------
+    # Observed detections
+    # ------------------------------------------------------------
+
+    plt.errorbar(
+        wphot[detected],
+        mag[detected],
+        yerr=[
+            mag_err_lower[detected],
+            mag_err_upper[detected]
+        ],
+        label="Observed photometry",
+        ecolor="red",
+        marker="o",
+        markersize=10,
+        ls="",
+        alpha=0.8,
+        markerfacecolor="none",
+        markeredgecolor="red",
+        markeredgewidth=3
+    )
+
+
+    # ------------------------------------------------------------
+    # Observed upper limits
+    # ------------------------------------------------------------
+
+    plt.scatter(
+        wphot[upper_limits],
+        upper_limit_mag,
+        marker="v",
+        s=100,
+        color="red",
+        label="Observed < 1.5σ",
+        zorder=5
+    )
+
+
+    # ------------------------------------------------------------
+    # Formatting
+    # ------------------------------------------------------------
+
+    plt.xlabel(
+        "Wavelength [Å]"
+    )
+
+    plt.ylabel(
+        "AB magnitude"
+    )
+
+    plt.xscale(
+        "log"
+    )
+
+    plt.yscale(
+        "linear"
+    )
+
+    plt.xlim(
+        xmin,
+        xmax * 5
+    )
+
+    plt.ylim(
+        y_low,
+        y_high
+    )
+
+    plt.gca().invert_yaxis()
+
+
+    # ------------------------------------------------------------
+    # Optional vertical features
+    # ------------------------------------------------------------
+
     # cws = [29053, 30392, 32070, 32970][2:]
-    # labels = ['Ca IV', 'Pf-delta']
-    # colors = ['green', 'red']
-    # # for i in range(2):
-    #     plt.axvspan(cws[i]*9, cws[i]*10, color=colors[i], alpha=0.3)
-    #     plt.axvline(cws[i]*9.32, color=colors[i], alpha=0.7, ls='--', lw=2, label=labels[i])
-    plt.legend(loc='best', fontsize=20)
+    # feature_labels = ["Ca IV", "Pf-delta"]
+    # colors = ["green", "red"]
+
+    # for i in range(2):
+    #     plt.axvspan(
+    #         cws[i] * 9,
+    #         cws[i] * 10,
+    #         color=colors[i],
+    #         alpha=0.3
+    #     )
+    #
+    #     plt.axvline(
+    #         cws[i] * 9.32,
+    #         color=colors[i],
+    #         alpha=0.7,
+    #         ls="--",
+    #         lw=2,
+    #         label=feature_labels[i]
+    #     )
+
+
+    # ------------------------------------------------------------
+    # Legend and title
+    # ------------------------------------------------------------
+
+    plt.legend(
+        loc="best",
+        fontsize=20
+    )
+
     fig = plt.gcf()
-    fig.suptitle(f'SED: z={zlo}-{zup}, {MIRI_desc}', y=0.94)
-    fig.tight_layout(rect=[0, 0, 1, 0.93])
-    plt.savefig(f'Prospector/Plots/z={zlo}-{zup} {MIRI_desc} SED.png', dpi=300)
-    #plt.show()
+
+    fig.suptitle(
+        f"SED: z={zlo}-{zup}, {MIRI_desc}",
+        y=0.94
+    )
+
+    fig.tight_layout(
+        rect=[0, 0, 1, 0.93]
+    )
+
+
+    # ------------------------------------------------------------
+    # Save
+    # ------------------------------------------------------------
+
+    plt.savefig(
+        f"Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/"
+        f"z={zlo}-{zup} {MIRI_desc} SED.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
     plt.close()
 
 # -----------------------

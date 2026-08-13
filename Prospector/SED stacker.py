@@ -200,14 +200,15 @@ def build_sps(**kwargs):
     sps = FastStepBasis()
     return sps
 
-
-zlo = 9
-zup = 10
+zlo = 11
+zup = 12
 
 start_time = time.perf_counter()
 
 model = build_model()
 print(f'model built after {time.perf_counter() - start_time:.2f} seconds \n\n')
+
+from prospect.models.templates import TemplateLibrary
 
 sps = build_sps()
 print(f'sps built after {time.perf_counter() - start_time:.2f} seconds \n\n')
@@ -219,89 +220,376 @@ import prospect.io.read_results as reader
 withMIRIfile = f'Prospector/z={zlo}-{zup} with MIRI.h5'
 noMIRIfile = f'Prospector/z={zlo}-{zup} no MIRI.h5'
 
-withMIRIresult, obs, _ = reader.results_from(withMIRIfile, dangerous=False)
-noMIRIresult, _, _ = reader.results_from(noMIRIfile, dangerous=False)
+# ============================================================
+# LOAD RESULTS
+# ============================================================
 
-withMIRI_imax = np.argmax(withMIRIresult['lnprobability'])
-withMIRI_theta_max = withMIRIresult["chain"][withMIRI_imax, :]
-noMIRI_imax = np.argmax(noMIRIresult['lnprobability'])
-noMIRI_theta_max = noMIRIresult["chain"][noMIRI_imax, :]
-thin = 1
+withMIRIresult, obs, _ = reader.results_from(
+    withMIRIfile,
+    dangerous=False
+)
 
-start_time = time.perf_counter()
+noMIRIresult, _, _ = reader.results_from(
+    noMIRIfile,
+    dangerous=False
+)
 
-### PLOT SEDs AND RESIDUALS
 
-# generate models
-withMIRI_mspec_map, withMIRI_mphot_map, _ = model.mean_model(withMIRI_theta_max, obs, sps=sps)
-noMIRI_mspec_map, noMIRI_mphot_map, _ = model.mean_model(noMIRI_theta_max, obs, sps=sps)
+# ============================================================
+# HELPER: WEIGHTED MEDIAN
+# ============================================================
 
-# Make plot of data and model
-plt.figure(figsize=(16,8))
+def weighted_median(values, weights):
 
-a = 1.0 + model.params.get('zred', 0.0) # cosmological redshifting
-# photometric effective wavelengths
+    order = np.argsort(values)
+
+    values = values[order]
+    weights = weights[order]
+
+    cumulative = np.cumsum(weights)
+    cumulative /= cumulative[-1]
+
+    return np.interp(
+        0.5,
+        cumulative,
+        values
+    )
+
+
+# ============================================================
+# HELPER: GET POSTERIOR SED + UNCERTAINTY
+# ============================================================
+
+def posterior_sed(
+    result,
+    obs,
+    model,
+    sps,
+    nsamples=500,
+    n_wavelengths=5000
+):
+
+    chain = np.asarray(result["chain"])
+
+    weights = np.asarray(
+        result["weights"],
+        dtype=float
+    )
+
+    weights /= weights.sum()
+
+    # --------------------------------------------------------
+    # Draw posterior samples according to Dynesty weights
+    # --------------------------------------------------------
+
+    rng = np.random.default_rng(42)
+
+    indices = rng.choice(
+        len(chain),
+        size=min(nsamples, len(chain)),
+        replace=True,
+        p=weights
+    )
+
+    theta_samples = chain[indices]
+
+    # --------------------------------------------------------
+    # Common observed-frame wavelength grid
+    # --------------------------------------------------------
+
+    z_index = list(
+        result["theta_labels"]
+    ).index("zred")
+
+    z_samples = theta_samples[:, z_index]
+
+    z_min = np.percentile(z_samples, 1)
+    z_max = np.percentile(z_samples, 99)
+
+    wave_min = sps.wavelengths.min() * (1 + z_min)
+    wave_max = sps.wavelengths.max() * (1 + z_max)
+
+    common_wave = np.logspace(
+        np.log10(wave_min),
+        np.log10(wave_max),
+        n_wavelengths
+    )
+
+    # --------------------------------------------------------
+    # Evaluate every posterior model
+    # --------------------------------------------------------
+
+    spectra = []
+    photometry = []
+
+    for theta in theta_samples:
+
+        mspec, mphot, _ = model.mean_model(
+            theta,
+            obs,
+            sps=sps
+        )
+
+        zred = theta[z_index]
+
+        wave = sps.wavelengths * (1 + zred)
+
+        # Interpolate to common wavelength grid
+        spectrum_interp = np.interp(
+            common_wave,
+            wave,
+            mspec,
+            left=np.nan,
+            right=np.nan
+        )
+
+        spectra.append(spectrum_interp)
+        photometry.append(mphot)
+
+    spectra = np.asarray(spectra)
+    photometry = np.asarray(photometry)
+
+    # --------------------------------------------------------
+    # Percentiles of posterior SED
+    # --------------------------------------------------------
+
+    sed_p16 = np.nanpercentile(
+        spectra,
+        16,
+        axis=0
+    )
+
+    sed_p50 = np.nanpercentile(
+        spectra,
+        50,
+        axis=0
+    )
+
+    sed_p84 = np.nanpercentile(
+        spectra,
+        84,
+        axis=0
+    )
+
+    # --------------------------------------------------------
+    # Percentiles of posterior photometry
+    # --------------------------------------------------------
+
+    phot_p16 = np.nanpercentile(
+        photometry,
+        16,
+        axis=0
+    )
+
+    phot_p50 = np.nanpercentile(
+        photometry,
+        50,
+        axis=0
+    )
+
+    phot_p84 = np.nanpercentile(
+        photometry,
+        84,
+        axis=0
+    )
+
+    return (
+        common_wave,
+        sed_p16,
+        sed_p50,
+        sed_p84,
+        phot_p16,
+        phot_p50,
+        phot_p84
+    )
+
+
+# ============================================================
+# COMPUTE POSTERIOR SEDS
+# ============================================================
+
+(
+    withMIRI_wspec,
+    withMIRI_sed_p16,
+    withMIRI_sed_p50,
+    withMIRI_sed_p84,
+    withMIRI_phot_p16,
+    withMIRI_phot_p50,
+    withMIRI_phot_p84
+) = posterior_sed(
+    withMIRIresult,
+    obs,
+    model,
+    sps,
+    nsamples=500
+)
+
+(
+    noMIRI_wspec,
+    noMIRI_sed_p16,
+    noMIRI_sed_p50,
+    noMIRI_sed_p84,
+    noMIRI_phot_p16,
+    noMIRI_phot_p50,
+    noMIRI_phot_p84
+) = posterior_sed(
+    noMIRIresult,
+    obs,
+    model,
+    sps,
+    nsamples=500
+)
+
+
+# Photometric wavelengths
 wphot = obs["phot_wave"]
-# spectroscopic wavelengths
-if obs["wavelength"] is None:
-    # *restframe* spectral wavelengths, since obs["wavelength"] is None
-    wspec = sps.wavelengths
-    wspec *= a #redshift them
-else:
-    wspec = obs["wavelength"]
 
-# establish bounds
-# Can change this for visuals!
-ARTIFICIAL_Y_LIM = 1e-17
+def maggies_to_ab(flux):
+    flux = np.asarray(flux, dtype=float)
+    mag = np.full_like(flux, np.nan)
+    valid = np.isfinite(flux) & (flux > 0)
+    mag[valid] = -2.5 * np.log10(flux[valid])
+    return mag
 
-xmin, xmax = np.min(wphot)*0.8, np.max(wphot)/0.8
-temp = np.interp(np.linspace(xmin,xmax,10000), wspec, withMIRI_mspec_map)
-print(f'temp.min={temp.min()}, temp.max={temp.max()}')
-ymin, ymax = max(temp.min()*(0.1),ARTIFICIAL_Y_LIM), temp.max()/0.1
+# Convert SED percentiles to AB magnitudes.
+# Flux percentile ordering reverses in magnitude space.
+withMIRI_sed_mag_p16 = maggies_to_ab(withMIRI_sed_p84)
+withMIRI_sed_mag_p50 = maggies_to_ab(withMIRI_sed_p50)
+withMIRI_sed_mag_p84 = maggies_to_ab(withMIRI_sed_p16)
 
-mask = withMIRI_mphot_map > 0
+noMIRI_sed_mag_p16 = maggies_to_ab(noMIRI_sed_p84)
+noMIRI_sed_mag_p50 = maggies_to_ab(noMIRI_sed_p50)
+noMIRI_sed_mag_p84 = maggies_to_ab(noMIRI_sed_p16)
 
-plt.loglog(wspec, withMIRI_mspec_map, label='Model spectrum with MIRI',
-    lw=0.7, color='blue', alpha=0.7)
-plt.loglog(wspec, noMIRI_mspec_map, label='Model spectrum no MIRI',
-    lw=0.7, color='hotpink', alpha=0.7)
-plt.errorbar(wphot, withMIRI_mphot_map, label='Model photometry with MIRI',
-        marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
-        markerfacecolor='none', markeredgecolor='blue', 
-        markeredgewidth=3)
-plt.errorbar(wphot, noMIRI_mphot_map, label='Model photometry no MIRI',
-        marker='s', markersize=10, alpha=0.8, ls='', lw=3, 
-        markerfacecolor='none', markeredgecolor='hotpink', 
-        markeredgewidth=3)
-plt.errorbar(wphot[mask], obs['maggies'][mask], yerr=obs['maggies_unc'][mask], 
-        label='Observed photometry', ecolor='gray', 
-        marker='o', markersize=10, ls='', lw=3, alpha=0.8, 
-        markerfacecolor='none', markeredgecolor='gray', 
-        markeredgewidth=3)
+# Convert model photometry
+withMIRI_phot_mag_p16 = maggies_to_ab(withMIRI_phot_p84)
+withMIRI_phot_mag_p50 = maggies_to_ab(withMIRI_phot_p50)
+withMIRI_phot_mag_p84 = maggies_to_ab(withMIRI_phot_p16)
 
-# plot transmission curves
-for f in obs['filters']:
-    w, t = f.wavelength.copy(), f.transmission.copy()
-    t = t / t.max()
-    t = 10**(0.2*(np.log10(ymax/ymin)))*t * ymin
-    plt.loglog(w, t, lw=3, color='gray', alpha=0.7)
+noMIRI_phot_mag_p16 = maggies_to_ab(noMIRI_phot_p84)
+noMIRI_phot_mag_p50 = maggies_to_ab(noMIRI_phot_p50)
+noMIRI_phot_mag_p84 = maggies_to_ab(noMIRI_phot_p16)
 
-plt.xlabel('Wavelength [A]')
-plt.ylabel('Flux Density [maggies]')
-# plt.xlim([xmin, xmax])
-plt.xlim([xmin, xmax*5])
-plt.ylim([ymin, ymax])
-### add vertical stripes on plot to show min and max wavelengths of Al V, Pf-5, Ca IV, Pf-delta
-# cws = [29053, 30392, 32070, 32970][2:]
-# labels = ['Ca IV', 'Pf-delta']
-# colors = ['green', 'red']
-# # for i in range(2):
-#     plt.axvspan(cws[i]*9, cws[i]*10, color=colors[i], alpha=0.3)
-#     plt.axvline(cws[i]*9.32, color=colors[i], alpha=0.7, ls='--', lw=2, label=labels[i])
-plt.legend(loc='best', fontsize=20)
+plt.figure(figsize=(16, 8))
+
+# Posterior SEDs
+plt.fill_between(
+    withMIRI_wspec, withMIRI_sed_mag_p16, withMIRI_sed_mag_p84,
+    color="lightblue", alpha=0.35, label="With MIRI 16–84%"
+)
+plt.plot(
+    withMIRI_wspec, withMIRI_sed_mag_p50,
+    color="blue", lw=1.5, label="With MIRI posterior median"
+)
+
+plt.fill_between(
+    noMIRI_wspec, noMIRI_sed_mag_p16, noMIRI_sed_mag_p84,
+    color="lightpink", alpha=0.35, label="No MIRI 16–84%"
+)
+plt.plot(
+    noMIRI_wspec, noMIRI_sed_mag_p50,
+    color="hotpink", lw=1.5, label="No MIRI posterior median"
+)
+
+# Posterior model photometry
+plt.errorbar(
+    wphot, withMIRI_phot_mag_p50,
+    yerr=[
+        withMIRI_phot_mag_p50 - withMIRI_phot_mag_p16,
+        withMIRI_phot_mag_p84 - withMIRI_phot_mag_p50
+    ],
+    label="With MIRI median photometry",
+    marker="s", markersize=10, ls="",
+    markerfacecolor="none", markeredgecolor="blue", markeredgewidth=3,
+    ecolor="blue", alpha=0.6, capsize=3
+)
+
+plt.errorbar(
+    wphot, noMIRI_phot_mag_p50,
+    yerr=[
+        noMIRI_phot_mag_p50 - noMIRI_phot_mag_p16,
+        noMIRI_phot_mag_p84 - noMIRI_phot_mag_p50
+    ],
+    label="No MIRI median photometry",
+    marker="s", markersize=10, ls="",
+    markerfacecolor="none", markeredgecolor="hotpink", markeredgewidth=3,
+    ecolor="hotpink", alpha=0.6, capsize=3
+)
+
+# Observed photometry
+obs_flux = np.asarray(obs["maggies"], dtype=float)
+obs_unc = np.asarray(obs["maggies_unc"], dtype=float)
+snr = obs_flux / obs_unc
+
+detected = (
+    (snr >= 1.5) & np.isfinite(obs_flux) & np.isfinite(obs_unc)
+    & (obs_unc > 0) & (obs_flux > obs_unc)
+)
+upper_limits = (
+    (snr < 1.5) & np.isfinite(obs_unc) & (obs_unc > 0)
+)
+
+obs_mag = np.full_like(obs_flux, np.nan)
+obs_mag_err_lower = np.full_like(obs_flux, np.nan)
+obs_mag_err_upper = np.full_like(obs_flux, np.nan)
+
+obs_mag[detected] = maggies_to_ab(obs_flux[detected])
+mag_bright = maggies_to_ab(obs_flux[detected] + obs_unc[detected])
+mag_faint = maggies_to_ab(obs_flux[detected] - obs_unc[detected])
+
+obs_mag_err_lower[detected] = obs_mag[detected] - mag_bright
+obs_mag_err_upper[detected] = mag_faint - obs_mag[detected]
+
+plt.errorbar(
+    wphot[detected], obs_mag[detected],
+    yerr=[obs_mag_err_lower[detected], obs_mag_err_upper[detected]],
+    label="Observed photometry",
+    ecolor="gray", marker="o", markersize=10, ls="",
+    markerfacecolor="none", markeredgecolor="gray", markeredgewidth=3,
+    capsize=3
+)
+
+# 1.5-sigma limits
+upper_limit_mag = maggies_to_ab(1.5 * obs_unc[upper_limits])
+
+plt.scatter(
+    wphot[upper_limits], upper_limit_mag,
+    marker="v", s=100, color="gray",
+    label="Observed < 1.5σ", zorder=5
+)
+
+# Axis limits
+xmin, xmax = np.min(wphot) * 0.8, np.max(wphot) / 0.8
+
+all_mags = np.concatenate([
+    withMIRI_sed_mag_p16[np.isfinite(withMIRI_sed_mag_p16)],
+    withMIRI_sed_mag_p84[np.isfinite(withMIRI_sed_mag_p84)],
+    noMIRI_sed_mag_p16[np.isfinite(noMIRI_sed_mag_p16)],
+    noMIRI_sed_mag_p84[np.isfinite(noMIRI_sed_mag_p84)],
+    obs_mag[np.isfinite(obs_mag)],
+    upper_limit_mag[np.isfinite(upper_limit_mag)]
+])
+
+brightest = np.nanmin(all_mags)
+faintest = np.nanmax(all_mags)
+
+plt.xlabel("Wavelength [Å]")
+plt.ylabel("AB magnitude")
+plt.xscale("log")
+plt.yscale("linear")
+plt.xlim(xmin, xmax * 5)
+plt.ylim(20, 40)
+plt.gca().invert_yaxis()
+
+plt.legend(loc="best", fontsize=14)
+
 fig = plt.gcf()
-fig.suptitle(f'SED: z={zlo}-{zup}', y=0.94)
+fig.suptitle(f"Posterior median SED: z={zlo}-{zup}", y=0.94)
 fig.tight_layout(rect=[0, 0, 1, 0.93])
-plt.savefig(f'Prospector/Plots/z={zlo}-{zup} joint SED.png', dpi=300)
-#plt.show()
+
+plt.savefig(
+    f"Prospector/Plots/z={zlo}-{zup} posterior median SED.png",
+    dpi=300,
+    bbox_inches="tight"
+)
 plt.close()
