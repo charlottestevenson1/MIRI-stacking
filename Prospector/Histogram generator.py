@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import prospect.io.read_results as reader
+import pickle
 
 from matplotlib.offsetbox import (
     AnchoredOffsetbox,
@@ -38,28 +39,28 @@ for parameter in params:
     redshift_bins = [
         {
             "label": "z = 8–9",
-            "with_miri": "Prospector/z=8-9 with MIRI.h5",
-            "without_miri": "Prospector/z=8-9 no MIRI.h5",
+            "with_miri": "Prospector/Fits/z=8-9 with MIRI.h5",
+            "without_miri": "Prospector/Fits/z=8-9 no MIRI.h5",
         },
         {
             "label": "z = 9–10",
-            "with_miri": "Prospector/z=9-10 with MIRI.h5",
-            "without_miri": "Prospector/z=9-10 no MIRI.h5",
+            "with_miri": "Prospector/Fits/z=9-10 with MIRI.h5",
+            "without_miri": "Prospector/Fits/z=9-10 no MIRI.h5",
         },
         {
             "label": "z = 10–11",
-            "with_miri": "Prospector/z=10-11 with MIRI.h5",
-            "without_miri": "Prospector/z=10-11 no MIRI.h5",
+            "with_miri": "Prospector/Fits/z=10-11 with MIRI.h5",
+            "without_miri": "Prospector/Fits/z=10-11 no MIRI.h5",
         },
         {
             "label": "z = 11–12",
-            "with_miri": "Prospector/z=11-12 with MIRI.h5",
-            "without_miri": "Prospector/z=11-12 no MIRI.h5",
+            "with_miri": "Prospector/Fits/z=11-12 with MIRI.h5",
+            "without_miri": "Prospector/Fits/z=11-12 no MIRI.h5",
         },
         {
             "label": "z = 12–15",
-            "with_miri": "Prospector/z=12-15 with MIRI.h5",
-            "without_miri": "Prospector/z=12-15 no MIRI.h5",
+            "with_miri": "Prospector/Fits/z=12-15 with MIRI.h5",
+            "without_miri": "Prospector/Fits/z=12-15 no MIRI.h5",
         },
     ]
 
@@ -137,6 +138,7 @@ for parameter in params:
     # ==========================================
 
     data = []
+    priors = []
 
     for zbin in redshift_bins:
 
@@ -176,6 +178,26 @@ for parameter in params:
             "nomiri_samples": samples_nomiri,
             "nomiri_weights": weights_nomiri,
         })
+
+        # ==========================================
+        # PRIOR
+        # ==========================================
+
+        readfile = zbin['with_miri']
+        result, _, _ = reader.results_from(readfile, dangerous=False)
+        model_params = result['model_params']
+
+        entry = next(
+        (p for p in result["model_params"] if p["name"] == parameter), 
+        model_params[9]
+        )
+
+        try:
+            prior = pickle.loads(entry['prior'])
+            priors.append(prior)
+
+        except:
+            print(entry['prior'])
 
 
     # ==========================================
@@ -221,7 +243,7 @@ for parameter in params:
     lower_limits = []
     upper_limits = []
 
-    for d in data:
+    for d, prior in zip(data, priors):
 
         # With MIRI
 
@@ -278,7 +300,6 @@ for parameter in params:
     xmin -= padding
     xmax += padding
 
-
     # ==========================================
     # HISTOGRAM BINS
     # ==========================================
@@ -309,7 +330,7 @@ for parameter in params:
     # PLOT EACH BIN
     # ==========================================
 
-    for ax, d in zip(axes, data):
+    for ax, d, prior in zip(axes, data, priors):
 
         samples_miri = d["miri_samples"]
         weights_miri = d["miri_weights"]
@@ -317,6 +338,17 @@ for parameter in params:
         samples_nomiri = d["nomiri_samples"]
         weights_nomiri = d["nomiri_weights"]
 
+        # --------------------------------------
+        # PRIOR VALUES
+        # --------------------------------------
+
+        x = np.linspace(xmin, xmax, 50)
+
+        if not isinstance(prior(0), np.ndarray):
+            prior_pdf = np.exp(prior(x))
+        else:
+            values = [prior(x)[i][0] for i in range(len(x))]
+            prior_pdf = np.exp(values)
 
         # --------------------------------------
         # WITH MIRI POSTERIOR
@@ -416,7 +448,21 @@ for parameter in params:
                 linestyle="--",
                 linewidth=2
             )
-
+        
+        # --------------------------------------
+        # PRIOR PLOTTING
+        # --------------------------------------
+        ax.step(
+            x,
+            prior_pdf,
+            where = 'mid',
+            color = 'gray',
+            label = 'Prior',
+            linestyle = '--',
+            linewidth = 1.5,
+            alpha = 1,
+            zorder = 1
+        )
 
         # --------------------------------------
         # AXIS LIMITS

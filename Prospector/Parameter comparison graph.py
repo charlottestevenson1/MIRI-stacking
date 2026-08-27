@@ -29,28 +29,28 @@ params = [
 redshift_bins = [
     {
         "label": "z = 8–9",
-        "with_miri": "Prospector/z=8-9 with MIRI.h5",
-        "without_miri": "Prospector/z=8-9 no MIRI.h5",
+        "with_miri": "Prospector/Fits/z=8-9 with MIRI.h5",
+        "without_miri": "Prospector/Fits/z=8-9 no MIRI.h5",
     },
     {
         "label": "z = 9–10",
-        "with_miri": "Prospector/z=9-10 with MIRI.h5",
-        "without_miri": "Prospector/z=9-10 no MIRI.h5",
+        "with_miri": "Prospector/Fits/z=9-10 with MIRI.h5",
+        "without_miri": "Prospector/Fits/z=9-10 no MIRI.h5",
     },
     {
         "label": "z = 10–11",
-        "with_miri": "Prospector/z=10-11 with MIRI.h5",
-        "without_miri": "Prospector/z=10-11 no MIRI.h5",
+        "with_miri": "Prospector/Fits/z=10-11 with MIRI.h5",
+        "without_miri": "Prospector/Fits/z=10-11 no MIRI.h5",
     },
     {
         "label": "z = 11–12",
-        "with_miri": "Prospector/z=11-12 with MIRI.h5",
-        "without_miri": "Prospector/z=11-12 no MIRI.h5",
+        "with_miri": "Prospector/Fits/z=11-12 with MIRI.h5",
+        "without_miri": "Prospector/Fits/z=11-12 no MIRI.h5",
     },
     {
         "label": "z = 12–15",
-        "with_miri": "Prospector/z=12-15 with MIRI.h5",
-        "without_miri": "Prospector/z=12-15 no MIRI.h5",
+        "with_miri": "Prospector/Fits/z=12-15 with MIRI.h5",
+        "without_miri": "Prospector/Fits/z=12-15 no MIRI.h5",
     },
 ]
 

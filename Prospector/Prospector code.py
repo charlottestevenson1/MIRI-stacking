@@ -32,11 +32,11 @@ def send_email(subject: str, body: str) -> None:
         server.send_message(msg)
 
 # Lower and upper redshift limits
-zlo = 11
-zup = 12
+zlo = 8
+zup = 9
 
 # Is MIRI included?
-MIRI_inc = False
+MIRI_inc = True
 MIRI_desc = 'with MIRI' if MIRI_inc else 'no MIRI'
 
 # Set the fitting method to use: either "emcee" or "dynesty"
@@ -105,16 +105,10 @@ def build_obs(zlo=zlo, zup=zup):
     fluxes = np.array(fluxes_nJy) / (3.631*1e12)
     errors = np.array(errors_nJy) / (3.631*1e12)
 
-    print(errors)
-    print(fluxes/errors)
-
     # cap the SNR ratio at 20
     snr_max = 20
     mask = np.where((fluxes/errors) > snr_max)
     errors[mask] = fluxes[mask]/snr_max
-
-    print(errors)
-    print(fluxes/errors)
 
     obs["maggies"] = fluxes
     obs["maggies_unc"] = errors
@@ -234,7 +228,7 @@ def build_model(nbins_sfh=8, **kwargs):
     model_params['zred']['isfree'] = True
     model_params['zred']['init'] = 0.5*(zlo+zup)
     model_params['zred']['prior'] = priors.TopHat(mini=zlo, maxi=zup)
-    print(f'Redshift range: z={zlo}-{zup}\n\n')
+    print(f'Redshift range: z={zlo}-{zup}\n{MIRI_desc}\n')
 
     # Deal with the age bins - let them vary based on the redshift being
     # considered
@@ -925,11 +919,12 @@ if __name__ == "__main__":
     parser.add_argument("--showplots", action="store_true")
     parser.add_argument("--fitnewmodel", action="store_true")
     parser.add_argument("--minimize", action="store_true")
+    parser.add_argument("--readfile", type=str, default=f'Prospector/Fits/z={zlo}-{zup} {MIRI_desc}.h5')
     args = parser.parse_args()
     run_params["outfile"] = args.outfile
     run_params["showplots"] = args.showplots
     run_params["fitnewmodel"] = args.fitnewmodel
-    run_params["readfile"] = f'Prospector/z={zlo}-{zup} {MIRI_desc}.h5'
+    run_params["readfile"] = args.readfile
     run_params["minimize"] = args.minimize
 
     start_time = time.perf_counter()
