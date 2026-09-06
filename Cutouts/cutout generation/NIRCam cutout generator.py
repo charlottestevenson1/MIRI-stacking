@@ -9,6 +9,7 @@ MOSAIC_DIRECTORY = ''
 
 BANDS = [i.strip() for i in open('Filter lists/filter list s', 'r').readlines()][:18]+['segmentation']
 
+
 size = 5 * u.arcsec
 
 # For SCI, this should be 1...

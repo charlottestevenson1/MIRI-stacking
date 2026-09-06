@@ -1,2 +1,6 @@
 *** FILTER LISTS ***
 This folder includes a list for each band detailing the objects which are covered by that band.
+
+ALL MIRI contains the list of objects which have data in all MIRI bands.
+ANY MIRI contains the list of objects which have data in at least one MIRI band.
+
