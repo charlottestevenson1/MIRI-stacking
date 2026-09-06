@@ -1,0 +1,25 @@
+# Ignore big data files
+*.fits
+*.pdf
+*.png
+*.log
+*.gif
+*.h5 generation time.txt
+
+.env
+env
+.Trash-35180
+opt
+
+Cutouts/cutout generation/Manual Cutouts.py
+Cutouts/cutout generation/Cutout2D.py
+Hainline VI investigation
+Photometry/Band data/pivot wave calculations.py
+Prospector/Prospector trial.py
+Prospector/InteractiveDemo.ipynb
+Prospector/Old fits
+Prospector/Old fits (wrong MIRI, no snr cap)
+Prospector/Old runs (just trying stuff out)
+
+PhotUtils Learning
+Redshift Bins/z = 11-12 investigation
