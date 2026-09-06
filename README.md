@@ -6,7 +6,7 @@ This repository contains the code used in the research project I undertook at Ca
 
 The goal of the project was to determine whether the use of JWST's MIRI, when used in conjunction with JWST's NIRCam, yields useful insights into the properties of high-redshift (z > 8) galaxies despite its poorer data quality in comparison with NIRCam. 
 
-The results showed that there was a substantial difference in the inferred properties of stacked high-redshift galaxies when MIRI filters were and were not included. Further details and discussion of these findings will be published soon.
+The results showed that there were substantial differences in the inferred properties of stacked high-redshift galaxies when MIRI filters were and were not included. Further details and discussion of these findings will be published soon.
 
 ## The code
 
