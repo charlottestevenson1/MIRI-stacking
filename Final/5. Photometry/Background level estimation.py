@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from astropy.io import fits
 
 from photutils.aperture import (
@@ -42,12 +41,13 @@ for (zlo, zup) in z_ranges:
                 continue
             
             aperture = CircularAperture((x_c, y_c), r = ap_radius)
-            flux, flux_err = aperture.do_photometry(image)
-            print(flux)
+            flux, _ = aperture.do_photometry(image)
             fluxes.append(flux[0])
 
-        flux_medians.append(np.nanmedian(fluxes))
-        flux_MADs.append(np.nanmedian(abs(fluxes-np.nanmedian(fluxes))))
+        fluxes = np.asarray(fluxes)
+        flux_median = np.nanmedian(fluxes)
+        flux_medians.append(flux_median)
+        flux_MADs.append(np.nanmedian(np.abs(fluxes - flux_median)))
 
     with open(f'Final/5. Photometry/Background levels/Redshifts {zlo}-{zup} background levels.txt', 'w') as f:
         f.writelines(str(flux_medians[i])+'\n' for i in range(len(bands)))

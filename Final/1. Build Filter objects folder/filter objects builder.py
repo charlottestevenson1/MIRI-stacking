@@ -29,13 +29,13 @@ for band in bands_s:
     for j in ['goods-s', 'goods-n']:
 
         # Open the right catalog for n/s
-        hdul = fits.open('Final/FITS files/'+j+' catalog.fits')
+        with fits.open('Final/FITS files/'+j+' catalog.fits') as hdul:
 
-        # Pick the HDU that the band data is stored in
-        if band in bands_miri:
-            data = hdul[10].data # MIRI HDU
-        else:
-            data = hdul[4].data # NIRCam HDU
+            # Pick the HDU that the band data is stored in
+            if band in bands_miri:
+                data = hdul[10].data # MIRI HDU
+            else:
+                data = hdul[4].data # NIRCam HDU
 
         # Select indices with non-zero flux entries for band in question - but skip bands which are not in GOODS-N if that's the GOODS file we are looking at
         if (j == 'goods-s') or (band in bands_n):

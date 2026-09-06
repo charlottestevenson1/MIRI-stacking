@@ -1,1 +1,0 @@
-This code creates lists for each redshift bin containing the selected IDs in that bin.

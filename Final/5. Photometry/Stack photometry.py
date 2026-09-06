@@ -1,16 +1,9 @@
 ### DOING STACK PHOTOMETRY ###
 
-import os
 import numpy as np
-import matplotlib.pyplot as plt
 from astropy.io import fits
 
-from photutils.aperture import (
-    CircularAperture,
-    CircularAnnulus,
-    ApertureStats,
-    aperture_photometry
-)
+from photutils.aperture import CircularAperture
 
 # Load bands and define NIRCam and MIRI bands
 with open('Final/Filter lists/filter list wide.txt') as f:
@@ -26,6 +19,11 @@ MJysr_to_nJy = np.array([21.15398748 for i in range(8)] + [84.61594994 for i in 
 # Aperture correction factors for ALL BANDS
 with open('Final/5. Photometry/Aperture corrections.txt') as f:
     ACs = np.array([float(wl) for wl in f.readlines()])
+
+if not (len(bands) == len(MJysr_to_nJy) == len(ACs)):
+    raise ValueError(
+        'Filter list, MJy/sr conversion, and aperture-correction lengths must match.'
+    )
     
 z_ranges = [(8,9), (9,10), (10,11), (11,12), (12,15)]
 
@@ -38,6 +36,9 @@ for (zlo, zup) in z_ranges:
     # Background levels ERRORS
     with open(f'Final/5. Photometry/Background levels/Redshifts {zlo}-{zup} background levels MAD.txt') as f:
         all_bkg_errors = np.array([1.4826*float(line) for line in f.readlines()]) * MJysr_to_nJy
+
+    if len(all_bkgs) != len(bands) or len(all_bkg_errors) != len(bands):
+        raise ValueError(f'Background data for z={zlo}-{zup} must contain one value per band.')
 
     # 'CORR'/'Corrected' here refers to aperture correction
     fluxes_CORR = []        # Corrected flux values
@@ -57,14 +58,13 @@ for (zlo, zup) in z_ranges:
         position = ((nx - 1) / 2, (ny - 1) / 2)
 
         aperture = CircularAperture(position, r = ap_radius)
-        fluxMJy, flux_errMJy = aperture.do_photometry(image)
+        fluxMJy, _ = aperture.do_photometry(image)
         flux = fluxMJy
-        flux_err = flux_errMJy
         fluxes_CORR.append(flux[0]*ACs[i])
         bkgs_CORR.append(all_bkgs[i]*ACs[i])
         bkg_errors_CORR.append(all_bkg_errors[i]*ACs[i])
 
-    fluxes_CORR = fluxes_CORR * MJysr_to_nJy
+    fluxes_CORR = np.asarray(fluxes_CORR) * MJysr_to_nJy
     fluxes_BSUB_CORR = np.array(fluxes_CORR) - np.array(bkgs_CORR)
 
     with open(f'Final/6. Prospector/Stack data/{zlo}-{zup} Fluxes.txt', 'w') as f:

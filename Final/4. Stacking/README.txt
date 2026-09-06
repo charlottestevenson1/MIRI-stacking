@@ -1,1 +1,0 @@
-This code performs inverse variance stacking on the masked cutouts within each redshift bin, ultimately placing the stacked images in the 'Final/4. Stacking/Stacks' folder.

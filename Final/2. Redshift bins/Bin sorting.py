@@ -1,12 +1,11 @@
 from astropy.io import fits
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 
 os.makedirs('Final/2. Redshift bins/Bin objects', exist_ok=True)
 
-hdul = fits.open('Final/FITS files/JADES_DR5_z_gt_8_Catalog_Hainline.fits')
-props = hdul[1].data
+with fits.open('Final/FITS files/JADES_DR5_z_gt_8_Catalog_Hainline.fits') as hdul:
+    props = hdul[1].data
 
 with open('Final/Filter objects/ALL MIRI.txt') as f:
     IDs = [int(ID) for ID in f.readlines()]

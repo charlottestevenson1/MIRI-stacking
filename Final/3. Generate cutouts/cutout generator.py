@@ -23,6 +23,9 @@ NIRCam_BANDS = [i.strip() for i in open('Final/Filter lists/filter list wide.txt
 # MIRI bands
 MIRI_BANDS = [i.strip() for i in open('Final/Filter lists/filter list wide.txt', 'r').readlines()][8:16]
 
+# Use the GOODS-S catalogue for source coordinates. Its NIRCam table is HDU 4.
+coorddata = fits.getdata('Final/FITS files/goods-s catalog.fits', ext=4)
+
 size = 5 * u.arcsec
 
 for BAND in NIRCam_BANDS:
@@ -31,20 +34,15 @@ for BAND in NIRCam_BANDS:
     # The ALL MIRI objects are only in GOODS-S
     filename = f'{MOSAIC_DIRECTORY}/hlsp_jades_jwst_nircam_goods-s_{BAND.lower()}_v5.0_drz.fits'
 
-    hdul = fits.open(filename)
-
-    SCIdata = hdul[1].data
-    ERRdata = hdul[2].data
-
-    # Access locations from small catalog - can replace with the main GOODS-S catalog HDUL, HDU no. 2 (I think)
-    coorddata = fits.open('Final/FITS files/jades_small.fits')[2].data
+    SCIdata = fits.getdata(filename, ext=1, memmap=False)
+    ERRdata = fits.getdata(filename, ext=2, memmap=False)
+    w = WCS(fits.getheader(filename, ext=1))
 
     for ID in IDs:
 
         coords = [coorddata[coorddata['ID'] == ID][0][i] for i in ['RA', 'DEC']]
         
         # Preparing WCS and coord parameters for cutout
-        w = WCS(hdul[1].header)
         coord = SkyCoord(coords[0], coords[1], unit="deg")
 
         # Defining cutout and header
@@ -78,19 +76,15 @@ for BAND in MIRI_BANDS:
     # The ALL MIRI objects are only in GOODS-S
     filename = f'{MOSAIC_DIRECTORY}/hlsp_smiles_jwst_miri_goodss_{BAND.lower()}_v1.0_drz.fits'
         
-    hdul = fits.open(filename)
-
-    SCIdata = hdul[1].data
-    ERRdata = hdul[2].data
-
-    coorddata = fits.open('Final/FITS files/jades_small.fits')[2].data
+    SCIdata = fits.getdata(filename, ext=1, memmap=False)
+    ERRdata = fits.getdata(filename, ext=2, memmap=False)
+    w = WCS(fits.getheader(filename, ext=1))
 
     for ID in IDs:
 
         coords = [coorddata[coorddata['ID'] == ID][0][i] for i in ['RA', 'DEC']]
         
         # Preparing WCS and coord parameters for cutout
-        w = WCS(hdul[1].header)
         coord = SkyCoord(coords[0], coords[1], unit="deg")
 
         # Defining cutout and header

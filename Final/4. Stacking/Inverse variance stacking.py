@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from astropy.io import fits
 import os
 
@@ -74,10 +73,8 @@ for (zlo, zup) in zreds:
             fits.writeto(f'Final/4. Stacking/Stacks/Redshifts {zlo}-{zup}/SCI/{band}_stack.fits', stack, overwrite = True)
             fits.writeto(f'Final/4. Stacking/Stacks/Redshifts {zlo}-{zup}/ERR/{band}_stack_ERR.fits', stack_err, overwrite=True)
 
-            print(f'Saved {band}.')
+            print(f'Saved {band}: {len(IDs)} objects stacked.')
 
         else:
             print(f'No valid objects for band {band}.')
             continue
-
-    print(f'{len(IDs)} stacked.')
