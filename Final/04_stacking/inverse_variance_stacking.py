@@ -15,22 +15,19 @@ for (z_lo, z_up) in z_ranges:
     os.makedirs(f'final/04_stacking/stacks/Redshifts {z_lo}-{z_up}', exist_ok = True)
 
     # Get band list
-    with open('final/filter_lists/filter_list_wide.txt') as f:
-        bands = [band.strip() for band in f.readlines()]
+    bands = np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)
 
     # Get ID list for the selected redshift bin
-    with open(f'final/02_redshift_bins/bin_objects/redshifts_{z_lo}_{z_up}.txt') as f:
-        all_IDs = [int(ID) for ID in f.readlines()]
+    all_IDs = np.loadtxt(f'final/02_redshift_bins/bin_objects/redshifts_{z_lo}_{z_up}.txt', dtype=int)
 
     # Iterate through bands
     for i in range(len(bands)):
         band = bands[i]
 
         # Find the IDs in the selected redshift bin which have data in the selected band
-        with open(f'final/filter_objects/{band.lower()}_objects.txt') as f:
-            band_IDs = [int(i) for i in f.readlines()]
-            IDs = [ID for ID in all_IDs if ID in band_IDs]
-        
+        band_IDs = np.loadtxt(f'final/filter_objects/{band.lower()}_objects.txt', dtype=int)
+        IDs = [ID for ID in all_IDs if ID in band_IDs]
+
         if not len(IDs) == 0:
             # Generate 3D tables of mosaics, where the third dimension is ID. This means we can easily stack later.
             sci_array = np.stack([

@@ -4,6 +4,7 @@ from astropy.coordinates import SkyCoord
 from astropy.nddata import Cutout2D
 import astropy.units as u
 import os
+import numpy as np
 
 os.makedirs('final/03_generate_cutouts/unmasked_cutouts/sci', exist_ok=True)
 os.makedirs('final/03_generate_cutouts/unmasked_cutouts/err', exist_ok=True)
@@ -14,8 +15,7 @@ os.makedirs('final/03_generate_cutouts/unmasked_cutouts/err', exist_ok=True)
 mosaic_directory = ''
 
 # Selecting IDs which have all WIDE bands.
-with open("final/filter_objects/all_miri.txt") as f:
-    ids = [int(id) for id in f.readlines()]
+ids = np.loadtxt('final/filter_objects/all_miri.txt', dtype=int)
 
 # Wide NIRCam bands and segmentation
 nircam_bands = [i.strip() for i in open('final/filter_lists/filter_list_wide.txt', 'r').readlines()][:8]+['segmentation']

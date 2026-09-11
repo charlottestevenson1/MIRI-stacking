@@ -6,8 +6,7 @@ from astropy.io import fits
 from photutils.aperture import CircularAperture
 
 # Load bands and define NIRCam and MIRI bands
-with open('final/filter_lists/filter_list_wide.txt') as f:
-    bands = [band.strip() for band in f.readlines()]
+bands = np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)
 
 nircam_bands = bands[:8]
 
@@ -17,8 +16,7 @@ miri_bands = bands[8:]
 mjysr_to_njy = np.array([21.15398748 for i in range(8)] + [84.61594994 for i in range(8)])
     
 # Aperture correction factors for ALL BANDS
-with open('final/05_photometry/aperture_corrections.txt') as f:
-    acs = np.array([float(wl) for wl in f.readlines()])
+acs = np.loadtxt('final/05_photometry/aperture_corrections.txt', dtype=float)
 
 if not (len(bands) == len(mjysr_to_njy) == len(acs)):
     raise ValueError(
@@ -30,12 +28,10 @@ z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=float)
 for (z_lo, z_up) in z_ranges:
 
     # Background levels
-    with open(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels.txt') as f:
-        all_bkgs = np.array([float(bkg) for bkg in f.readlines()]) * mjysr_to_njy
+    all_bkgs = np.loadtxt(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels.txt', dtype=float) * mjysr_to_njy
 
     # Background levels ERRORS
-    with open(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels_mad.txt') as f:
-        all_bkg_errors = np.array([1.4826*float(line) for line in f.readlines()]) * mjysr_to_njy
+    all_bkg_errors = np.loadtxt(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels_mad.txt', dtype=float) * mjysr_to_njy
 
     if len(all_bkgs) != len(bands) or len(all_bkg_errors) != len(bands):
         raise ValueError(f'Background data for z={z_lo}-{z_up} must contain one value per band.')
@@ -67,10 +63,5 @@ for (z_lo, z_up) in z_ranges:
     fluxes_corr = np.asarray(fluxes_corr) * mjysr_to_njy
     fluxes_bsub_corr = np.array(fluxes_corr) - np.array(bkgs_corr)
 
-    with open(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_fluxes.txt', 'w') as f:
-        for point in fluxes_bsub_corr:
-            f.writelines(str(point)+'\n')
-
-    with open(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_errors.txt', 'w') as f:
-            for point in bkg_errors_corr:
-                f.writelines(str(point)+'\n')
+    np.savetxt(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_fluxes.txt', fluxes_bsub_corr, fmt='%f')
+    np.savetxt(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_errors.txt', bkg_errors_corr, fmt='%f')

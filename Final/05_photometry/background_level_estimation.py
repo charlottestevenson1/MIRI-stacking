@@ -6,8 +6,7 @@ from photutils.aperture import (
 )
 
 # Load bands and define NIRCam and MIRI bands
-with open('final/filter_lists/filter_list_wide.txt') as f:
-    bands = [band.strip() for band in f.readlines()]
+bands = np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)
 
 nircam_bands = bands[:8]
 miri_bands = bands[8:]
@@ -49,9 +48,7 @@ for (z_lo, z_up) in z_ranges:
         flux_medians.append(flux_median)
         flux_mads.append(np.nanmedian(np.abs(fluxes - flux_median)))
 
-    with open(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels.txt', 'w') as f:
-        f.writelines(str(flux_medians[i])+'\n' for i in range(len(bands)))
-    with open(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels_mad.txt', 'w') as f:
-        f.writelines(str(flux_mads[i])+'\n' for i in range(len(bands)))
-    
+    np.savetxt(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels.txt', flux_medians, fmt='%f')
+    np.savetxt(f'final/05_photometry/background_levels/redshifts_{z_lo}_{z_up}_background_levels_mad.txt', flux_mads, fmt='%f')
+
     print(f'Completed z = {z_lo} to {z_up}.')

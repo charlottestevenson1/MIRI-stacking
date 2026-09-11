@@ -94,12 +94,9 @@ def build_obs(z_lo=z_lo, z_up=z_up):
     obs["filters"] = sedpy.observate.load_filters(filternames)
 
     # Load fluxes and errors
-    with open(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_fluxes.txt') as f:
-        fluxes_njy = [float(point) for point in f.readlines()]
+    fluxes_njy = np.loadtxt(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_fluxes.txt', dtype=float)
+    errors_njy = np.loadtxt(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_errors.txt', dtype=float)
 
-    with open(f'final/06_sed_fitting/stack_data/{z_lo}_{z_up}_errors.txt') as f:
-        errors_njy = [float(point) for point in f.readlines()]
-    
     # Convert to maggies
     fluxes = np.array(fluxes_njy) / (3.631*1e12)
     errors = np.array(errors_njy) / (3.631*1e12)

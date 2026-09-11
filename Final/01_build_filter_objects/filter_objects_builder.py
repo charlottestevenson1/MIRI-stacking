@@ -1,24 +1,21 @@
 from astropy.io import fits
 import os
+import numpy as np
 
 # Ensure that the 'filter_objects' folder exists:
 os.makedirs("final/filter_objects", exist_ok=True)
 
 # Bands in goods-s (35)
-with open('final/filter_lists/filter_list_s.txt') as f:
-    bands_s = [band.strip() for band in f.readlines()]
+bands_s = np.loadtxt('final/filter_lists/filter_list_s.txt', dtype=str)
 
 # Bands in goods-n (27)
-with open('final/filter_lists/filter_list_n.txt') as f:
-    bands_n = [band.strip() for band in f.readlines()]
+bands_n = np.loadtxt('final/filter_lists/filter_list_n.txt', dtype=str)
 
 # Bands in MIRI HDU (8)
-with open('final/filter_lists/filter_list_miri.txt') as f:
-    bands_miri = [band.strip() for band in f.readlines()]
+bands_miri = np.loadtxt('final/filter_lists/filter_list_miri.txt', dtype=str)
 
 # IDs of objects included in Hainline paper (2081 objects)
-with open('final/01_build_filter_objects/hainline_galaxy_ids.txt') as f:
-    hainline_ids = [int(id) for id in f.readlines()]
+hainline_ids = np.loadtxt('final/01_build_filter_objects/hainline_galaxy_ids.txt', dtype=int)
 
 # bands_n is a subset of bands_s, so we can just iterate through bands_s
 for band in bands_s:
@@ -59,18 +56,12 @@ for band in bands_s:
         final_list += non_zero_hainline_objects
 
     # Write final_list to a file in the filter objects folder
-    with open(f'final/filter_objects/{band.lower()}_objects.txt', 'w') as f:
-        for line in final_list:
-            f.write(str(line)+'\n')
+    np.savetxt(f'final/filter_objects/{band.lower()}_objects.txt', final_list, fmt='%d')
     
     print(f"{band} completed: {len(final_list)} objects")
 
 
 # Generate list of objects with data in all MIRI bands
-
-# MIRI bands
-with open('final/filter_lists/filter_list_miri.txt') as f:
-    bands_miri = [band.strip() for band in f.readlines()]
 
 # Setting up 2D array: 1 row for each wide filter 
 objects = [0 for i in range(len(bands_miri))]
@@ -82,6 +73,4 @@ for i in range(len(bands_miri)):
 # To get objects in all miri bands:
 final_list = [ID for ID in hainline_ids if all(ID in sublist for sublist in objects)]
 
-with open('final/filter_objects/all_miri.txt', 'w') as f:
-    for line in final_list:
-        f.write(str(line)+'\n')
+np.savetxt('final/filter_objects/all_miri.txt', final_list, fmt='%d')
