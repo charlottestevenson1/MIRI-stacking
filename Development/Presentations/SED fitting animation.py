@@ -120,11 +120,11 @@ def build_model(nbins_sfh=8, **kwargs):
     model_params['agebins']['depends_on'] = zred_to_agebins
 
 
-    # Let log(mass) vary (not mass, Prospector calculates that)
+    # Let log(mass) vary (not mass, prospector calculates that)
     model_params['logmass']['isfree'] = True
     model_params['logmass']['init'] = 9
     model_params['logmass']['prior'] = priors.Uniform(mini=6, maxi=12)
-    # Set up the mass parameter that Prospector calculates
+    # Set up the mass parameter that prospector calculates
     model_params['mass']['isfree'] = False
     model_params['mass']['init'] = np.array([nbins_sfh *[10**model_params['logmass']['init']/nbins_sfh]])
     model_params['mass']['depends_on'] = zlogsfr_ratios_to_masses
@@ -211,15 +211,15 @@ def build_sps(**kwargs):
 # SETTINGS
 # ============================================================
 
-readfile = "Development/Prospector/z=8-9 with MIRI.h5"
+readfile = "development/prospector/z=8-9 with MIRI.h5"
 
 cache_file = (
-    "Development/Prospector/Animations/"
+    "development/prospector/animations/"
     "z8-9_nested_seds.npz"
 )
 
 output_file = (
-    "Development/Prospector/Animations/"
+    "development/prospector/animations/"
     "z8-9_nested_sed_convergence.gif"
 )
 
@@ -242,7 +242,7 @@ sps = build_sps()
 print(f'sps built after {time.perf_counter() - start_time:.2f} seconds \n\n')
 
 
-readfile = "Development/Prospector/Fits/z=8-9 with MIRI.h5"
+readfile = "development/prospector/fits/z=8-9 with MIRI.h5"
 
 result, obs, _ = reader.results_from(
     readfile,
@@ -280,7 +280,7 @@ if os.path.exists(cache_file):
 else:
 
     print("No cached SEDs found.")
-    print("Evaluating Prospector models...")
+    print("Evaluating prospector models...")
 
     spectra = []
     waves = []

@@ -52,7 +52,7 @@ plot_photometry = True
 original_colour = "steelblue" if (gt_or_lt)=='>' else "red" # LT colour
 selected_colour = "red" if (gt_or_lt)=='>' else "steelblue" # GT colour
 
-main_dir = "Development/Prospector/Plots/Bimodality Checks"
+main_dir = "development/prospector/Plots/Bimodality Checks"
 
 # CHANGE THIS
 sub_dir = f"z={zlo}-{zup}, {cut_param} {gt_or_lt} {cut_value}"
@@ -67,11 +67,11 @@ os.makedirs(output_dir, exist_ok=True)
 # ============================================================
 
 redshift_bins = {
-    "z = 8-9": f"Development/Prospector/Fits/z=8-9 {MIRI_desc}.h5",
-    "z = 9-10": f"Development/Prospector/Fits/z=9-10 {MIRI_desc}.h5",
-    "z = 10-11": f"Development/Prospector/Fits/z=10-11 {MIRI_desc}.h5",
-    "z = 11-12": f"Development/Prospector/Fits/z=11-12 {MIRI_desc}.h5",
-    "z = 12-15": f"Development/Prospector/Fits/z=12-15 {MIRI_desc}.h5",
+    "z = 8-9": f"development/prospector/fits/z=8-9 {MIRI_desc}.h5",
+    "z = 9-10": f"development/prospector/fits/z=9-10 {MIRI_desc}.h5",
+    "z = 10-11": f"development/prospector/fits/z=10-11 {MIRI_desc}.h5",
+    "z = 11-12": f"development/prospector/fits/z=11-12 {MIRI_desc}.h5",
+    "z = 12-15": f"development/prospector/fits/z=12-15 {MIRI_desc}.h5",
 }
 
 # ============================================================
@@ -185,11 +185,11 @@ def build_model(nbins_sfh=8, **kwargs):
     model_params['agebins']['depends_on'] = zred_to_agebins
 
 
-    # Let log(mass) vary (not mass, Prospector calculates that)
+    # Let log(mass) vary (not mass, prospector calculates that)
     model_params['logmass']['isfree'] = True
     model_params['logmass']['init'] = 9
     model_params['logmass']['prior'] = priors.Uniform(mini=6, maxi=12)
-    # Set up the mass parameter that Prospector calculates
+    # Set up the mass parameter that prospector calculates
     model_params['mass']['isfree'] = False
     model_params['mass']['init'] = np.array([nbins_sfh *[10**model_params['logmass']['init']/nbins_sfh]])
     model_params['mass']['depends_on'] = zlogsfr_ratios_to_masses
@@ -288,7 +288,7 @@ import prospect.io.read_results as reader
 # grab results (dictionary), the obs dictionary, and our corresponding models
 # When using parameter files `dangerous=True`
 
-readfile = f'Development/Prospector/Fits/z={zlo}-{zup} {MIRI_desc}.h5'
+readfile = f'development/prospector/fits/z={zlo}-{zup} {MIRI_desc}.h5'
 print(f'Readfile: {readfile}')
 
 # ============================================================

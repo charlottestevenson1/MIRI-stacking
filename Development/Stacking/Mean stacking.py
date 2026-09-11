@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 
-stacking_galaxy_IDs = [int(i) for i in open('Development/Stacking/Objects for stacking.txt').readlines()]
+stacking_galaxy_IDs = [int(i) for i in open('development/stacking/Objects for stacking.txt').readlines()]
 
 bands = [
     'F070W', 'F090W', 'F115W', 'F150W', 'F162M', 'F182M', 'F200W', 'F210M',
@@ -12,19 +12,19 @@ bands = [
 ]
 
 for band in bands:
-    band_galaxy_IDs = [int(i) for i in open(f'Development/Filter objects/{band} objects.txt')]
+    band_galaxy_IDs = [int(i) for i in open(f'development/filter_objects/{band} objects.txt')]
 
     galaxy_IDs = [ID for ID in stacking_galaxy_IDs if ID in band_galaxy_IDs]
     n_galaxies = min(370, len(galaxy_IDs))
     galaxy_IDs = galaxy_IDs[:n_galaxies]
 
     SCI_array = np.stack([
-        fits.getdata(f'Development/Cutouts/SCI/{ID}_{band}.fits')
+        fits.getdata(f'development/cutouts/SCI/{ID}_{band}.fits')
         for ID in galaxy_IDs
     ])
 
     stack = np.nanmean(SCI_array, axis=0)
 
-    fits.writeto(f'Development/Stacking/tests/{band}_stack_MEAN.fits', stack, overwrite = True)
+    fits.writeto(f'development/stacking/tests/{band}_stack_MEAN.fits', stack, overwrite = True)
 
     print(f'Saved {band}.')

@@ -18,7 +18,7 @@ results_type = 'dynesty'
 
 # grab results (dictionary), the obs dictionary, and our corresponding models
 # When using parameter files set `dangerous=True`
-readfile = 'Development/Prospector/Fits/z=9-10 with MIRI.h5'
+readfile = 'development/prospector/fits/z=9-10 with MIRI.h5'
 result, obs, model = reader.results_from(readfile, dangerous=False)
 
 model_params = result['model_params']

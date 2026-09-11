@@ -52,7 +52,7 @@ nbins = 50
 original_colour = "white"
 selected_colour = "steelblue"
 
-main_dir = "Development/Prospector/Plots/Bimodality Checks"
+main_dir = "development/prospector/Plots/Bimodality Checks"
 
 # CHANGE THIS
 sub_dir = f"z={zlo}-{zup}, {cut_param} {gt_or_lt} {cut_value}"
@@ -66,11 +66,11 @@ os.makedirs(output_dir, exist_ok=True)
 # ============================================================
 
 redshift_bins = {
-    f"z = 8-9": f"Development/Prospector/Fits/z=8-9 {MIRI_desc}.h5",
-    f"z = 9-10": f"Development/Prospector/Fits/z=9-10 {MIRI_desc}.h5",
-    f"z = 10-11": f"Development/Prospector/Fits/z=10-11 {MIRI_desc}.h5",
-    f"z = 11-12": f"Development/Prospector/Fits/z=11-12 {MIRI_desc}.h5",
-    f"z = 12-15": f"Development/Prospector/Fits/z=12-15 {MIRI_desc}.h5",
+    f"z = 8-9": f"development/prospector/fits/z=8-9 {MIRI_desc}.h5",
+    f"z = 9-10": f"development/prospector/fits/z=9-10 {MIRI_desc}.h5",
+    f"z = 10-11": f"development/prospector/fits/z=10-11 {MIRI_desc}.h5",
+    f"z = 11-12": f"development/prospector/fits/z=11-12 {MIRI_desc}.h5",
+    f"z = 12-15": f"development/prospector/fits/z=12-15 {MIRI_desc}.h5",
 }
 
 

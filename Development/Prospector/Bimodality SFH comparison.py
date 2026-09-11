@@ -42,7 +42,7 @@ colour1 = "steelblue" if gt_or_lt==">" else "red"
 colour2 = "red" if gt_or_lt==">" else "steelblue"
 
 # Output
-main_dir = "Development/Prospector/Plots/Bimodality Checks"
+main_dir = "development/prospector/Plots/Bimodality Checks"
 
 # CHANGE?
 sub_dir = f"z={zlo}-{zup}, {cut_param} {gt_or_lt} {cut_value}"
@@ -438,7 +438,7 @@ print(
 # CHANGE?
 
 readfile = (
-    f"Development/Prospector/Fits/"
+    f"development/prospector/fits/"
     f"z={zlo}-{zup} {MIRI_desc}.h5"
 )
 

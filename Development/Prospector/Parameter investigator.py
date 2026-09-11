@@ -390,7 +390,7 @@ zlo = 8
 zup = 9
 
 filename = (
-    f"Development/Prospector/Fits/"
+    f"development/prospector/fits/"
     f"z={zlo}-{zup} with MIRI.h5"
 )
 
@@ -413,7 +413,7 @@ colours = [
 ]
 
 output_dir = (
-    "Development/Prospector/Plots/"
+    "development/prospector/Plots/"
     "Metallicity SEDs"
 )
 

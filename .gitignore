@@ -10,3 +10,12 @@
 env
 .Trash-35180
 opt
+
+development/cutouts/cutout generation/manual_cutouts.py
+development/cutouts/cutout generation/cutout2d.py
+development/photometry/band data/pivot wave calculations.py
+development/prospector/old runs (just trying stuff out)/prospector_trial.py
+development/prospector/interactive_demo.ipynb
+development/prospector/old fits
+development/prospector/old fits (wrong miri, no snr cap)
+development/prospector/old runs (just trying stuff out)

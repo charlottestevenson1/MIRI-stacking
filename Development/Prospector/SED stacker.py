@@ -364,12 +364,12 @@ for zlo, zup in zreds:
     )
 
     withMIRIfile = (
-        f'Development/Prospector/Fits/'
+        f'development/prospector/fits/'
         f'z={zlo}-{zup} with MIRI.h5'
     )
 
     noMIRIfile = (
-        f'Development/Prospector/Fits/'
+        f'development/prospector/fits/'
         f'z={zlo}-{zup} no MIRI.h5'
     )
 
@@ -953,7 +953,7 @@ for zlo, zup in zreds:
     make_sed_plot(
         show_miri=False,
         filename=(
-            f"Development/Prospector/Plots/Posterior median SEDs/"
+            f"development/prospector/Plots/Posterior median SEDs/"
             f"z={zlo}-{zup} posterior median SED no MIRI.png"
         )
     )
@@ -965,7 +965,7 @@ for zlo, zup in zreds:
     make_sed_plot(
         show_miri=True,
         filename=(
-            f"Development/Prospector/Plots/Posterior median SEDs/"
+            f"development/prospector/Plots/Posterior median SEDs/"
             f"z={zlo}-{zup} posterior median SED both.png"
         )
     )

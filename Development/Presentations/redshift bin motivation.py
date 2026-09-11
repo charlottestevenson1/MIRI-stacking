@@ -9,7 +9,7 @@ import prospect.io.read_results as reader
 # ============================================================
 
 result, obs, _ = reader.results_from(
-    "Development/Prospector/Fits/z=8-9 with MIRI.h5",
+    "development/prospector/fits/z=8-9 with MIRI.h5",
     dangerous=False
 )
 
@@ -242,7 +242,7 @@ ax.grid(
 plt.tight_layout()
 
 plt.savefig(
-    "Development/Presentations/restframe_filter_coverage_continuous.png",
+    "development/presentations/restframe_filter_coverage_continuous.png",
     dpi=400,
     bbox_inches="tight",
     transparent=True

@@ -33,7 +33,7 @@ def plot_SED(ID):
     id = ID     # ID of the galaxy we want to plot the SED for
 
     #Opening HDUL file and extracting data
-    filename = '/FITS files/jades_small.fits'
+    filename = '/fits_files/jades_small.fits'
     hdul = fits.open(filename)
     ndata = hdul[2].data
     ndata_line = ndata[ndata['ID'] == id][0]
@@ -48,7 +48,7 @@ def plot_SED(ID):
     filters = [nircam_filters, miri_filters]
 
     # Importing pre-calculated pivot wavelengths from file, and converting to microns
-    pivotlist = [float(line.strip()) for line in open('Development/Photometry/Band data/pivot_waves.txt', 'r').readlines()]
+    pivotlist = [float(line.strip()) for line in open('development/photometry/band_data/pivot_waves.txt', 'r').readlines()]
 
     # Constructing lists of fluxes for each instrument
     nircam_fluxes = []
@@ -128,7 +128,7 @@ for i in range(26):
     ax.set_axis_off()
     ax.set_box_aspect(1)
 
-    data = fits.getdata(f'Development/Photometry/Stacked images/SCI/{BAND}_stack.fits')
+    data = fits.getdata(f'development/photometry/Stacked images/SCI/{BAND}_stack.fits')
     nx, ny = data.shape
 
     #put back in for normal
@@ -136,13 +136,13 @@ for i in range(26):
     ax.imshow(data, origin='lower', vmin=vmin, vmax=vmax, cmap='inferno')
     ax.set_title(BAND, fontsize = 8)
 
-SED = mpimg.imread('Development/Photometry/Lorenzo SED.png')
+SED = mpimg.imread('development/photometry/Lorenzo SED.png')
 
 ax_sed = fig.add_subplot(bottom[0, 1])
 ax_sed.set_axis_off()
 ax_sed.imshow(SED)
 
 fig.canvas.draw()
-fig.savefig(f'Development/Photometry/Lorenzo_figure.pdf', bbox_inches='tight', pad_inches=0.02)
+fig.savefig(f'development/photometry/Lorenzo_figure.pdf', bbox_inches='tight', pad_inches=0.02)
 
 plt.close()

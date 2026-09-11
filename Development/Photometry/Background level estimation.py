@@ -18,7 +18,7 @@ bands = [
 ap_radius = 5   # in px
 
 for band in bands:
-    image = fits.getdata(f'Development/Stacking/Masked inverse variance stacking/Stacked images/SCI/{band}_stack.fits')
+    image = fits.getdata(f'development/stacking/masked_inverse_variance_stacking/Stacked images/SCI/{band}_stack.fits')
     nx, ny = image.shape
 
     fluxes = []

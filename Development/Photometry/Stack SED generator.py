@@ -19,13 +19,13 @@ bands = [
     "F1280W", "F1500W", "F1800W", "F2100W", "F2550W"
 ]
 
-with open('Development/Photometry/Background levels.txt') as f:
+with open('development/photometry/Background levels.txt') as f:
     bkgs = np.array([float(bkg) for bkg in f.readlines()])
 
-with open('Development/Photometry/Background levels MAD.txt') as f:
+with open('development/photometry/Background levels MAD.txt') as f:
     bkg_errors = [1.4826*float(line) for line in f.readlines()]
 
-with open('Development/Photometry/Pivot wavelengths.txt') as f:
+with open('development/photometry/Pivot wavelengths.txt') as f:
     pivot_waves = np.array([float(wl) for wl in f.readlines()])
 
 ap_radius = 5     # in px
@@ -36,8 +36,8 @@ errors = []
 for i in range(len(bands)):
     band = bands[i]
 
-    image = fits.getdata(f'Development/Photometry/Stacked images/SCI/{band}_stack.fits')
-    error = fits.getdata(f'Development/Photometry/Stacked images/ERR/{band}_stack_ERR.fits')
+    image = fits.getdata(f'development/photometry/Stacked images/SCI/{band}_stack.fits')
+    error = fits.getdata(f'development/photometry/Stacked images/ERR/{band}_stack_ERR.fits')
 
     ny, nx = image.shape
     position = ((nx - 1) / 2, (ny - 1) / 2)
@@ -62,7 +62,7 @@ plt.xscale('log')
 plt.xlabel('Pivot wavelength (microns)')
 plt.ylabel('Flux in 0.15" aperture (nJy)')
 
-plt.savefig('Development/Photometry/Stack SED.png')
+plt.savefig('development/photometry/Stack SED.png')
 plt.show()
 
 # plt.plot(pivot_waves/1e4, errors, label='IVW error', marker='o', ls=' ')

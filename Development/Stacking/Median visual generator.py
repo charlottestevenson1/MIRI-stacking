@@ -22,7 +22,7 @@ fig.suptitle(
 
 # ----- Global stretch (comment out to use individual stretches) -----
 images = [
-    fits.getdata(f'Development/Stacking/tests/{band}_stack_MEDIAN.fits')
+    fits.getdata(f'development/stacking/tests/{band}_stack_MEDIAN.fits')
     for band in bands
 ]
 
@@ -75,7 +75,7 @@ for ax in axes[len(bands):]:
 plt.tight_layout()
 
 fig.savefig(
-    'Development/Stacking/All_stacks_median.pdf',
+    'development/stacking/All_stacks_median.pdf',
     bbox_inches='tight'
 )
 

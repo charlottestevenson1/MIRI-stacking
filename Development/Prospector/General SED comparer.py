@@ -14,7 +14,7 @@ from astropy.cosmology import WMAP9 as cosmo
 # FILE 1
 # ------------------------------------------------------------
 
-file1 = "Development/Prospector/Fits/z=8-9 with MIRI.h5"
+file1 = "development/prospector/fits/z=8-9 with MIRI.h5"
 label1 = "z = 8-9 with MIRI, no logzsol cap"
 
 zlo1 = 8
@@ -25,7 +25,7 @@ zup1 = 9
 # FILE 2
 # ------------------------------------------------------------
 
-file2 = "Development/Prospector/Fits/z=8-9 with MIRI logzsol<-1.h5"
+file2 = "development/prospector/fits/z=8-9 with MIRI logzsol<-1.h5"
 label2 = "z = 8-9 with MIRI, logzsol capped at -1"
 
 zlo2 = 8
@@ -43,7 +43,7 @@ colour1 = "steelblue"
 colour2 = "red"
 
 output_file = (
-    "Development/Prospector/Plots/"
+    "development/prospector/Plots/"
     "SED_capped_zsol_comparison.png"
 )
 

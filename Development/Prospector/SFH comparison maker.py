@@ -13,11 +13,11 @@ zlo = 12
 zup = 15
 
 with_miri_file = (
-    f"Development/Prospector/Fits/z={zlo}-{zup} with MIRI.h5"
+    f"development/prospector/fits/z={zlo}-{zup} with MIRI.h5"
 )
 
 no_miri_file = (
-    f"Development/Prospector/Fits/z={zlo}-{zup} no MIRI.h5"
+    f"development/prospector/fits/z={zlo}-{zup} no MIRI.h5"
 )
 
 n_sfh_samples = 1000
@@ -25,7 +25,7 @@ n_sfh_samples = 1000
 colour_miri = "steelblue"
 colour_no_miri = "hotpink"
 
-output_dir = "Development/Prospector/Plots/SFHs"
+output_dir = "development/prospector/Plots/SFHs"
 os.makedirs(output_dir, exist_ok=True)
 
 title = f"SFH comparison: z = {zlo}-{zup}"

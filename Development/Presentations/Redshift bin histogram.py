@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 
 files = [
-    ("z=8–9", "Development/Redshift Bins/Bin objects/Redshifts 8-9.txt"),
-    ("z=9–10", "Development/Redshift Bins/Bin objects/Redshifts 9-10.txt"),
-    ("z=10–11", "Development/Redshift Bins/Bin objects/Redshifts 10-11.txt"),
-    ("z=11–12", "Development/Redshift Bins/Bin objects/Redshifts 11-12.txt"),
-    ("z=12–15", "Development/Redshift Bins/Bin objects/Redshifts 12-15.txt"),
+    ("z=8–9", "development/redshift_bins/bin_objects/redshifts_8_9.txt"),
+    ("z=9–10", "development/redshift_bins/bin_objects/redshifts_9_10.txt"),
+    ("z=10–11", "development/redshift_bins/bin_objects/redshifts_10_11.txt"),
+    ("z=11–12", "development/redshift_bins/bin_objects/redshifts_11_12.txt"),
+    ("z=12–15", "development/redshift_bins/bin_objects/redshifts_12_15.txt"),
 ]
 
 labels = []
@@ -78,7 +78,7 @@ ax.grid(
 plt.tight_layout()
 
 plt.savefig(
-    "Development/Presentations/galaxies_per_redshift_bin.png",
+    "development/presentations/galaxies_per_redshift_bin.png",
     dpi=400,
     bbox_inches="tight",
     transparent=True

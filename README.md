@@ -10,4 +10,4 @@ The results showed that there were substantial differences in the inferred prope
 
 ## The code
 
-The repository is separated into two main folders: `Development/` and `Final/`. The `Final/` folder contains the organised and documented production code. The `Development/` folder is much messier - enter at your own peril - and contains the code used in testing and side-questing.
+The repository is separated into two main folders: `development/` and `final/`. The `final/` folder contains the organised and documented production code. The `development/` folder contains exploratory, testing, and side-project code.

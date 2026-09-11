@@ -23,7 +23,7 @@ generate_1D = False
 # LOAD RESULTS
 # ============================================================
 
-readfile = "Development/Prospector/Fits/z=8-9 with MIRI.h5"
+readfile = "development/prospector/fits/z=8-9 with MIRI.h5"
 
 result, obs, model = reader.results_from(
     readfile,

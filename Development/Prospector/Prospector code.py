@@ -92,12 +92,12 @@ def build_obs(zlo=zlo, zup=zup):
     obs["filters"] = sedpy.observate.load_filters(filternames)
 
     # Load fluxes and errors
-    with open(f'Development/Prospector/Stack data/{zlo}-{zup} Fluxes.txt') as f:
+    with open(f'development/prospector/stack_data/{zlo}-{zup} Fluxes.txt') as f:
         all_fluxes_nJy = [float(point) for point in f.readlines()]
         # Weird indices are to select for only wide bands in NIRCam.
         fluxes_nJy = [all_fluxes_nJy[i] for i in [0,1,2,3,6,9,12,15,18,19,20,21,22,23,24,25]]
 
-    with open(f'Development/Prospector/Stack data/{zlo}-{zup} Errors.txt') as f:
+    with open(f'development/prospector/stack_data/{zlo}-{zup} Errors.txt') as f:
         all_errors_nJy = [float(point) for point in f.readlines()]
         errors_nJy = [all_errors_nJy[i] for i in [0,1,2,3,6,9,12,15,18,19,20,21,22,23,24,25]]
     
@@ -238,11 +238,11 @@ def build_model(nbins_sfh=8, **kwargs):
     model_params['agebins']['depends_on'] = zred_to_agebins
 
 
-    # Let log(mass) vary (not mass, Prospector calculates that)
+    # Let log(mass) vary (not mass, prospector calculates that)
     model_params['logmass']['isfree'] = True
     model_params['logmass']['init'] = 9
     model_params['logmass']['prior'] = priors.Uniform(mini=6, maxi=12)
-    # Set up the mass parameter that Prospector calculates
+    # Set up the mass parameter that prospector calculates
     model_params['mass']['isfree'] = False
     model_params['mass']['init'] = np.array([nbins_sfh *[10**model_params['logmass']['init']/nbins_sfh]])
     model_params['mass']['depends_on'] = zlogsfr_ratios_to_masses
@@ -368,7 +368,7 @@ def plot_results(run_params, model, sps):
     
     tracefig.suptitle(f'Traceplot: z={zlo}-{zup}, {MIRI_desc}', y=0.995)
 
-    plt.savefig(f'Development/Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} traceplot.png', dpi=300)
+    plt.savefig(f'development/prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} traceplot.png', dpi=300)
     #plt.show()
     plt.close()
 
@@ -450,7 +450,7 @@ def plot_results(run_params, model, sps):
             ax.set_ylabel(f"logSFRr{num}")
 
     cornerfig.suptitle(f'Cornerplot: z={zlo}-{zup}, {MIRI_desc}', y=0.995)
-    plt.savefig(f'Development/Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} cornerplot.png', dpi=300)
+    plt.savefig(f'development/prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} cornerplot.png', dpi=300)
     #plt.show()
     plt.close()
 
@@ -490,7 +490,7 @@ def plot_results(run_params, model, sps):
         ax.invert_xaxis()
         fig.suptitle(f'SFH: z={zlo}-{zup}, {MIRI_desc}', y=0.94)
         fig.tight_layout(rect=[0, 0, 1, 0.93])
-        plt.savefig(f'Development/Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} SFH.png', dpi=300)
+        plt.savefig(f'development/prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/z={zlo}-{zup} {MIRI_desc} SFH.png', dpi=300)
         #plt.show()
         plt.close()
 
@@ -901,7 +901,7 @@ def plot_results(run_params, model, sps):
     # ------------------------------------------------------------
 
     plt.savefig(
-        f"Development/Prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/"
+        f"development/prospector/Plots/z={zlo}-{zup}, {MIRI_desc}/"
         f"z={zlo}-{zup} {MIRI_desc} SED.png",
         dpi=300,
         bbox_inches="tight"
@@ -919,7 +919,7 @@ if __name__ == "__main__":
     parser.add_argument("--showplots", action="store_true")
     parser.add_argument("--fitnewmodel", action="store_true")
     parser.add_argument("--minimize", action="store_true")
-    parser.add_argument("--readfile", type=str, default=f'Development/Prospector/Fits/z={zlo}-{zup} {MIRI_desc}.h5')
+    parser.add_argument("--readfile", type=str, default=f'development/prospector/fits/z={zlo}-{zup} {MIRI_desc}.h5')
     args = parser.parse_args()
     run_params["outfile"] = args.outfile
     run_params["showplots"] = args.showplots
@@ -1005,7 +1005,7 @@ if __name__ == "__main__":
 
         # comment out if you don't want to set this up!
         send_email(
-            "Prospector run finished",
+            "prospector run finished",
             f"Your prospector run finished in {(time.perf_counter() - start_time)/3600:.2f} hours."
         )
 
