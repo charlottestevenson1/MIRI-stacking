@@ -12,7 +12,7 @@ with open('final/filter_lists/filter_list_wide.txt') as f:
 nircam_bands = bands[:8]
 miri_bands = bands[8:]
 
-z_ranges = [(8,9), (9,10), (10,11), (11,12), (12,15)]
+z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=float)
 
 for (z_lo, z_up) in z_ranges:
 

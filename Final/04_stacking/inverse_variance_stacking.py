@@ -6,9 +6,9 @@ import os
 os.makedirs('final/04_stacking/stacks', exist_ok = True)
 
 # Redshift bin boundaries
-zreds = [(8,9), (9,10), (10,11), (11,12), (12,15)]
+z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=float)
 
-for (z_lo, z_up) in zreds:
+for (z_lo, z_up) in z_ranges:
 
     print(f'Redshift bin: z = {z_lo} - {z_up}\n')
 

@@ -1,0 +1,7 @@
+# Redshift bin boundaries
+# Form: lower upper
+8 9
+9 10
+10 11
+11 12
+12 15

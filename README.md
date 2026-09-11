@@ -11,3 +11,5 @@ The results showed that there were substantial differences in the inferred prope
 ## The code
 
 The repository is separated into two main folders: `development/` and `final/`. The `final/` folder contains the organised and documented production code. The `development/` folder contains exploratory, testing, and side-project code.
+
+See the requirements.txt file for recommended package versions.

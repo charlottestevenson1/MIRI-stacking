@@ -1,0 +1,15 @@
+astro-prospector==1.4.1
+astro-sedpy==0.4.1
+astropy==8.0.1
+corner==2.3.0
+dynesty==2.0.0
+fsps==0.4.8
+h5py==3.16.0
+matplotlib==3.11.1
+numpy==2.4.6
+photutils==3.0.0
+python-dotenv==1.2.2
+scipy==1.17.1
+
+# Optional: only needed if fit_method is changed from "dynesty" to "emcee".
+# emcee==3.1.6
