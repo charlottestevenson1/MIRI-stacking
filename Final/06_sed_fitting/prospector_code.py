@@ -86,8 +86,8 @@ def build_obs(z_lo=z_lo, z_up=z_up):
     obs = {}
 
     # Filter names - loads the transmission curves of the filters
-    nircam_bands = [f'jwst_{band.lower()}' for band in ["F070W", "F090W", "F115W", "F150W", "F200W", "F277W", "F356W", "F444W"]] # Only W bands
-    miri_bands = [f'jwst_{band.lower()}' for band in ["F560W", "F770W", "F1000W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W"]]
+    nircam_bands = [f'jwst_{band.lower()}' for band in np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)[:8]] # Only W bands
+    miri_bands = [f'jwst_{band.lower()}' for band in np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)[8:]] # Only W bands
     filternames = nircam_bands + miri_bands
 
     # Instantiate 'Filter()' objects with sedpy, and put them in the filters key of obs
