@@ -1,4 +1,4 @@
-# Redshift Bins
+# Redshift bins
 
 Run `bin_sorting.py` after the filter-object lists have been created.
 
