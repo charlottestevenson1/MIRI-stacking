@@ -5,7 +5,7 @@
 - Place the catalogue fits_files listed in `fits_files/README.md` in `final/fits_files/`.
 - Provide the JADES NIRCam and SMILES MIRI mosaic files for the cutout stage.
 - Set `MOSAIC_DIRECTORY` in `3_generate_cutouts/cutout_generator.py`.
-- Set redshift bin limits in redshift_bins.txt
+- Set redshift bin limits in `redshift_bins.txt`.
 
 ## Run Order
 
