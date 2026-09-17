@@ -1,4 +1,4 @@
-# Inverse-Variance stacking
+# Inverse-variance stacking
 
 Run `inverse_variance_stacking.py` after the cutouts have been generated and masked.
 
