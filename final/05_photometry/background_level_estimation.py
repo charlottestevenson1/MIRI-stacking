@@ -1,9 +1,11 @@
 import numpy as np
 from astropy.io import fits
-
+import os
 from photutils.aperture import (
     CircularAperture
 )
+
+os.makedirs('final/05_photometry/background_levels', exist_ok=True)
 
 # Load bands and define NIRCam and MIRI bands
 bands = np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)
@@ -11,7 +13,7 @@ bands = np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)
 nircam_bands = bands[:8]
 miri_bands = bands[8:]
 
-z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=float)
+z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=int)
 
 for (z_lo, z_up) in z_ranges:
 

@@ -18,7 +18,7 @@ redshifts_by_id = {
 }
 
 # The bin boundaries
-z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=float)
+z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=int)
 
 for z_range in z_ranges:
     z_lo = z_range[0]

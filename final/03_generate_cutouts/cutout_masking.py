@@ -8,16 +8,13 @@ import os
 os.makedirs('final/03_generate_cutouts/masked_cutouts', exist_ok = True)
 
 # Get band list
-with open('final/filter_lists/filter_list_wide.txt') as f:
-    bands = [band.strip() for band in f.readlines()]
+bands = np.load
 
 # Get MIRI bands
-with open('final/filter_lists/filter_list_miri.txt') as f:
-    miri_bands = [band.strip() for band in f.readlines()]
+miri_bands = np.loadtxt('final/filter_lists/filter_list_miri.txt', dtype=str)
 
 # Get ID list
-with open('final/filter_objects/all_miri.txt') as f:
-    all_ids = [int(id) for id in f.readlines()]
+all_ids = np.loadtxt('final/filter_objects/all_miri.txt', dtype=int)
 
 # Loop through bands
 for i in range(len(bands)):
@@ -25,8 +22,7 @@ for i in range(len(bands)):
     print(f'BAND: {band}------------------------------')
     
     # Check valid IDs
-    with open(f"final/filter_objects/{band.lower()}_objects.txt") as f:
-        band_ids = [int(id) for id in f.readlines()]
+    band_ids = np.loadtxt(f"final/filter_objects/{band.lower()}_objects.txt", dtype=int)
 
     ids = [id for id in all_ids if id in band_ids]
 

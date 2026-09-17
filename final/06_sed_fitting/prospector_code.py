@@ -39,7 +39,7 @@ z_up = 9
 
 # Is MIRI included?
 miri_inc = True
-miri_desc = 'with miri' if miri_inc else 'no miri'
+miri_desc = 'with_miri' if miri_inc else 'no_miri'
 
 # Set the fitting method to use: either "emcee" or "dynesty"
 fit_method = "dynesty"  # "emcee" or "dynesty"
@@ -367,7 +367,7 @@ def plot_results(run_params, model, sps):
     
     tracefig.suptitle(f'Traceplot: z={z_lo}-{z_up}, {miri_desc}', y=0.995)
 
-    plt.savefig(f'final/06_sed_fitting/plots/z_{z_lo}_{z_up}_{miri_desc.replace(" ", "_").lower()}_traceplot.png', dpi=300)
+    plt.savefig(f'final/06_sed_fitting/plots/z_{z_lo}_{z_up}_{miri_desc}_traceplot.png', dpi=300)
     #plt.show()
     plt.close()
 
@@ -449,7 +449,7 @@ def plot_results(run_params, model, sps):
             ax.set_ylabel(f"logSFRr{num}")
 
     cornerfig.suptitle(f'Cornerplot: z={z_lo}-{z_up}, {miri_desc}', y=0.995)
-    plt.savefig(f'final/06_sed_fitting/plots/z_{z_lo}_{z_up}_{miri_desc.replace(" ", "_").lower()}_cornerplot.png', dpi=300)
+    plt.savefig(f'final/06_sed_fitting/plots/z_{z_lo}_{z_up}_{miri_desc}_cornerplot.png', dpi=300)
     #plt.show()
     plt.close()
 
@@ -489,7 +489,7 @@ def plot_results(run_params, model, sps):
         ax.invert_xaxis()
         fig.suptitle(f'SFH: z={z_lo}-{z_up}, {miri_desc}', y=0.94)
         fig.tight_layout(rect=[0, 0, 1, 0.93])
-        plt.savefig(f'final/06_sed_fitting/plots/z_{z_lo}_{z_up}_{miri_desc.replace(" ", "_").lower()}_sfh.png', dpi=300)
+        plt.savefig(f'final/06_sed_fitting/plots/z_{z_lo}_{z_up}_{miri_desc}_sfh.png', dpi=300)
         #plt.show()
         plt.close()
 

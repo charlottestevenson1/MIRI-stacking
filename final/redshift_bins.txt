@@ -1,5 +1,6 @@
 # Redshift bin boundaries
 # Form: lower upper
+# INTEGERS ONLY!
 8 9
 9 10
 10 11

@@ -6,13 +6,13 @@ import os
 os.makedirs('final/04_stacking/stacks', exist_ok = True)
 
 # Redshift bin boundaries
-z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=float)
+z_ranges = np.loadtxt('final/redshift_bins.txt', dtype=int)
 
 for (z_lo, z_up) in z_ranges:
 
     print(f'Redshift bin: z = {z_lo} - {z_up}\n')
 
-    os.makedirs(f'final/04_stacking/stacks/Redshifts {z_lo}-{z_up}', exist_ok = True)
+    os.makedirs(f'final/04_stacking/stacks/redshifts_{z_lo}_{z_up}', exist_ok = True)
 
     # Get band list
     bands = np.loadtxt('final/filter_lists/filter_list_wide.txt', dtype=str)
@@ -65,10 +65,10 @@ for (z_lo, z_up) in z_ranges:
                 where=denominator > 0
             )
 
-            os.makedirs(f'final/04_stacking/stacks/Redshifts {z_lo}-{z_up}/sci', exist_ok = True)
-            os.makedirs(f'final/04_stacking/stacks/Redshifts {z_lo}-{z_up}/err', exist_ok = True)
-            fits.writeto(f'final/04_stacking/stacks/Redshifts {z_lo}-{z_up}/sci/{band}_stack.fits', stack, overwrite = True)
-            fits.writeto(f'final/04_stacking/stacks/Redshifts {z_lo}-{z_up}/err/{band}_stack_err.fits', stack_err, overwrite=True)
+            os.makedirs(f'final/04_stacking/stacks/redshifts_{z_lo}_{z_up}/sci', exist_ok = True)
+            os.makedirs(f'final/04_stacking/stacks/redshifts_{z_lo}_{z_up}/err', exist_ok = True)
+            fits.writeto(f'final/04_stacking/stacks/redshifts_{z_lo}_{z_up}/sci/{band}_stack.fits', stack, overwrite = True)
+            fits.writeto(f'final/04_stacking/stacks/redshifts_{z_lo}_{z_up}/err/{band}_stack_err.fits', stack_err, overwrite=True)
 
             print(f'Saved {band}: {len(IDs)} objects stacked.')
 
