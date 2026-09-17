@@ -1,4 +1,4 @@
-# Filter Lists
+# Filter lists
 
 This folder contains the filter definitions used by the pipeline:
 
