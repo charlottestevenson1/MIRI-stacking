@@ -1,4 +1,4 @@
-# Required FITS Files
+# Required FITS files
 
 Place the following catalogue files in `final/fits_files/`:
 
