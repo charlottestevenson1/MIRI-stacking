@@ -1,4 +1,4 @@
-# Build Filter Objects
+# Build filter objects
 
 Before running the script, place the required catalogue fits_files in `final/fits_files/`.
 See `fits_files/README.md` for the required filenames.
