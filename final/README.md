@@ -1,4 +1,4 @@
-# final Pipeline
+# Final pipeline
 
 ## Requirements
 
