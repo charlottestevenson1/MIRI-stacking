@@ -1,4 +1,4 @@
-# photometry
+# Photometry
 
 This stage generates the flux and error data used for SED fitting.
 
