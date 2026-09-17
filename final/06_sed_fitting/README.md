@@ -1,4 +1,4 @@
-# prospector
+# SED fitting
 
 Before running this stage, generate the flux and error files using the scripts in
 `final/05_photometry/`.
